@@ -1,0 +1,40 @@
+---
+- name: Setup Xen on Ubuntu
+  become: true
+  hosts: all
+  tasks:
+    - name: Update & upgrade
+      apt:
+        update_cache: true
+        upgrade: dist
+        cache_valid_time: 3600
+    - name: Remove Guest Additions
+      apt:
+        name: virtualbox-guest-dkms
+        state: absent
+        autoremove: yes
+    - name: Install Xen
+      apt:
+        pkg: '{{ item }}'
+        state: present
+      with_items:
+        - curl
+        - git
+        - golang-1.6
+        - python-dev
+        - python-pip
+        - python-virtualenv
+        - qemu-system-x86
+        - vim
+        - xen-hypervisor
+    - name: Reboot into Xen
+      shell: 'sleep 2 && shutdown -r now "Ansible updates triggered"'
+      async: 1
+      poll: 0
+      ignore_errors: yes
+    - name: Wait for server to come back
+      local_action: wait_for host="{{ inventory_hostname }}"
+      args:
+        state: started
+        delay: 10
+      become: false
