@@ -43,7 +43,7 @@ func NewPacket(op xenStoreOperation, payload []byte, txid uint32) (*Packet, erro
 	return &Packet{
 		Header: &PacketHeader{
 			Op:     op,
-			RqId:   RequestId(),
+			RqId:   RequestID(),
 			TxId:   txid,
 			Length: uint32(len(payload)),
 		},
