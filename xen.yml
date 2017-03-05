@@ -2,6 +2,13 @@
 - name: Setup Xen on Ubuntu
   become: true
   hosts: all
+  gather_facts: False
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      register: output
+      changed_when: output.stdout != ""
+    - setup: # aka gather_facts
   tasks:
     - name: Update & upgrade
       apt:
@@ -18,12 +25,8 @@
         pkg: '{{ item }}'
         state: present
       with_items:
-        - curl
         - git
-        - golang-1.6
-        - python-dev
-        - python-pip
-        - python-virtualenv
+        - golang
         - qemu-system-x86
         - vim
         - xen-hypervisor
