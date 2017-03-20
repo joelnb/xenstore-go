@@ -32,6 +32,11 @@ const (
 	XsResetWatches
 
 	XsInvalid xenStoreOperation = 0xffff
+
+	// XenStorePathSeparator is the separator between paths in XenStore. Parts of any path sent
+	// to/received from XenStore should be joined with exactly 1 instance of this string. This is
+	// not platform dependent.
+	XenStorePathSeparator = "/"
 )
 
 var (

@@ -16,24 +16,26 @@ var (
 	permissionsRegex = regexp.MustCompile("^[wrbn]\\d+$")
 )
 
+// JoinXenStorePath concatenates parts of a path together with the XenStorePathSeparator,
+// ensuring that exactly 1 instance of the XenStorePathSeparator is used.
 func JoinXenStorePath(paths ...string) string {
 	var fullpath string
 
 	for i, path := range paths {
 		firstElem := (i == 0)
 
-		if !firstElem && strings.HasPrefix(path, "/") {
+		if !firstElem && strings.HasPrefix(path, XenStorePathSeparator) {
 			path = path[1:]
 		}
 
-		if strings.HasSuffix(path, "/") {
+		if strings.HasSuffix(path, XenStorePathSeparator) {
 			path = path[:len(path)-1]
 		}
 
 		if firstElem {
 			fullpath = fullpath + path
 		} else {
-			fullpath = fullpath + "/" + path
+			fullpath = fullpath + XenStorePathSeparator + path
 		}
 	}
 
