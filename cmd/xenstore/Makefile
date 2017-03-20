@@ -1,7 +1,7 @@
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_DIRTY = $(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 COMMON_ARGS = -ldflags "-X main.GitCommit='$(GIT_COMMIT)$(GIT_DIRTY)'"
-DEPS = $(wildcard *.go) $(wildcard ../*.go)
+DEPS = $(wildcard *.go) $(wildcard ../../*.go)
 
 default: xenstore
 
