@@ -23,7 +23,7 @@ var xenStoreErrors = map[string]syscall.Errno{
 }
 
 // Error converts a string returned from XenStore to the syscall error
-// it represents
+// it represents.
 func Error(s string) error {
 	if err, ok := xenStoreErrors[s]; ok {
 		return err

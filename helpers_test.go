@@ -53,26 +53,26 @@ func TestUnixSocketPath(t *testing.T) {
 	os.Setenv("XENSTORED_PATH", "/example/xensocket")
 	os.Setenv("XENSTORED_RUNDIR", "")
 	assert.Equal(t, "/example/xensocket", UnixSocketPath(),
-		"should be equal to XENSTORED_PATH if XENSTORED_PATH is set")
+		"Should be equal to XENSTORED_PATH if XENSTORED_PATH is set")
 
 	os.Setenv("XENSTORED_PATH", "")
 	os.Setenv("XENSTORED_RUNDIR", "/tmp/xenstored/")
 	assert.Equal(t, "/tmp/xenstored/socket", UnixSocketPath(),
-		"should be equal to XENSTORED_RUNDIR + 'socket' if XENSTORED_RUNDIR is set")
+		"Should be equal to XENSTORED_RUNDIR + 'socket' if XENSTORED_RUNDIR is set")
 
 	os.Setenv("XENSTORED_PATH", "")
 	os.Setenv("XENSTORED_RUNDIR", "")
 	assert.Equal(t, "/var/run/xenstored/socket", UnixSocketPath(),
-		"should have a default if neither env variable is set")
+		"Should have a default if neither env variable is set")
 }
 
 func TestPathJoin(t *testing.T) {
 	assert.Equal(t, "/tools/vm", JoinXenStorePath("/tools", "vm"),
-		"should preserve leading slash when joining")
+		"Should preserve leading slash when joining")
 
 	assert.Equal(t, "tools/vm", JoinXenStorePath("tools", "vm"),
-		"should preserve lack of leading slash when joining")
+		"Should preserve lack of leading slash when joining")
 
 	assert.Equal(t, "/local/domain/0/name", JoinXenStorePath("/local", "domain", "0", "name"),
-		"should behave the same for larger lists of elements")
+		"Should behave the same for larger lists of elements")
 }

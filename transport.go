@@ -6,28 +6,21 @@ import (
 	"os"
 )
 
+// Transport is an interface for sending and receiving data from XenStore.
 type Transport interface {
+	// Send a packet to the XenStore backend.
 	Send(*Packet) error
+	// Receive a packet from the XenStore backend.
 	Receive() (*Packet, error)
+	// Close if required by the underlying implementation.
 	Close() error
 }
 
+// ReadWriteTransport is an implementation of the Transport interface which works for any
+// io.ReadWriteCloser..
 type ReadWriteTransport struct {
 	rw   io.ReadWriteCloser
 	open bool
-}
-
-func (r *ReadWriteTransport) Send(p *Packet) error {
-	return p.Pack(r.rw)
-}
-
-func (r *ReadWriteTransport) Receive() (*Packet, error) {
-	p := &Packet{}
-	return p, p.Unpack(r.rw)
-}
-
-func (r *ReadWriteTransport) IsOpen() bool {
-	return r.open
 }
 
 func (r *ReadWriteTransport) Close() error {
@@ -40,12 +33,29 @@ func (r *ReadWriteTransport) Close() error {
 	return nil
 }
 
+func (r *ReadWriteTransport) Send(p *Packet) error {
+	return p.Pack(r.rw)
+}
+
+func (r *ReadWriteTransport) Receive() (*Packet, error) {
+	p := &Packet{}
+	return p, p.Unpack(r.rw)
+}
+
+// Check if the underlying io.ReadWriteCloser has been closed yet.
+func (r *ReadWriteTransport) IsOpen() bool {
+	return r.open
+}
+
+// UnixSocketTransport is an implementation of Transport which sends/receives data from
+// XenStore using a unix socket.
 type UnixSocketTransport struct {
 	*ReadWriteTransport
 
 	Path string
 }
 
+// NewUnixSocketTransport creates a new connected UnixSocketTransport.
 func NewUnixSocketTransport(path string) (*UnixSocketTransport, error) {
 	c, err := net.Dial("unix", path)
 	if err != nil {
@@ -61,12 +71,16 @@ func NewUnixSocketTransport(path string) (*UnixSocketTransport, error) {
 	}, nil
 }
 
+// XenBusTransport is an implementation of Transport which sends/receives data from
+// XenStore using the special XenBus device on Linux (and possibly other Unix operating
+// systems)
 type XenBusTransport struct {
 	*ReadWriteTransport
 
 	Path string
 }
 
+// Create a new connected XenBusTransport.
 func NewXenBusTransport(path string) (*XenBusTransport, error) {
 	file, err := os.OpenFile(path, os.O_RDWR, os.ModeCharDevice|os.ModePerm)
 	if err != nil {

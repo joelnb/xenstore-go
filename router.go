@@ -25,8 +25,8 @@ type Router struct {
 	loop       bool
 }
 
-// Loop starts the Router's internal event loop.
-func (r *Router) Loop() error {
+// Start starts the Router's internal event loop.
+func (r *Router) Start() error {
 	r.loop = true
 
 	for r.loop {

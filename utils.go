@@ -47,6 +47,7 @@ var (
 )
 
 func init() {
+	// Create the mutex used to synchronise access to the request counter variable.
 	counterMutex = &sync.Mutex{}
 }
 
@@ -56,8 +57,9 @@ type Event struct {
 	Token string
 }
 
-// RequestID returns the next unique (for this session) request ID to use
-// when contacting XenStore
+// RequestID returns the next unique (for this session) request ID to use when contacting XenStore.
+// RequestID synchronises access to the counter and is therefore safe to call across multiple
+// goroutines.
 func RequestID() uint32 {
 	counterMutex.Lock()
 	defer counterMutex.Unlock()
@@ -68,8 +70,8 @@ func RequestID() uint32 {
 	return requestCounter - 1
 }
 
-// ControlDomain checks whether the current Xen domain has the 'control_d'
-// capability (will be true on Domain-0).
+// ControlDomain checks whether the current Xen domain has the 'control_d' capability (will be true
+// on Domain-0).
 func ControlDomain() bool {
 	r, err := ioutil.ReadFile("/proc/xen/capabilities")
 	if err != nil {

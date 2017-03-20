@@ -5,11 +5,15 @@ import (
 	"strings"
 )
 
+// Client is a wrapper which allows easier communication with XenStore by providing
+// methods which allow performing normal XenStore functions with minimal effort.
 type Client struct {
 	transport Transport
 	router    *Router
 }
 
+// NewUnixSocketClient creates a new Client which will be connected to an underlying
+// UnixSocket.
 func NewUnixSocketClient(path string) (*Client, error) {
 	t, err := NewUnixSocketTransport(path)
 	if err != nil {
@@ -19,6 +23,8 @@ func NewUnixSocketClient(path string) (*Client, error) {
 	return NewClient(t), nil
 }
 
+// NewXenBusClient creates a new Client which will be connected to an underlying
+// XenBus device.
 func NewXenBusClient(path string) (*Client, error) {
 	t, err := NewXenBusTransport(path)
 	if err != nil {
@@ -28,6 +34,8 @@ func NewXenBusClient(path string) (*Client, error) {
 	return NewClient(t), nil
 }
 
+// NewClient creates a new connected Client and starts the internal Router so
+// that packets can be sent and received correctly by the Client.
 func NewClient(t Transport) *Client {
 	c := &Client{
 		transport: t,
@@ -35,11 +43,12 @@ func NewClient(t Transport) *Client {
 	}
 
 	// Run router in separate goroutine
-	go c.router.Loop()
+	go c.router.Start()
 
 	return c
 }
 
+// Close stops the underlying Router and closes the Transport.
 func (c *Client) Close() error {
 	c.router.Stop()
 	return c.transport.Close()
@@ -70,6 +79,7 @@ func (c *Client) submitBytes(op xenStoreOperation, payload []byte, txid uint32) 
 	return rsp, nil
 }
 
+// List lists the descendants of path.
 func (c *Client) List(path string) ([]string, error) {
 	p, err := c.submitBytes(XsDirectory, []byte(path), 0x0)
 	if err != nil {
@@ -80,6 +90,7 @@ func (c *Client) List(path string) ([]string, error) {
 	return strings.Split(p.payloadString(), "\x00"), nil
 }
 
+// Read reads the contents of path from XenStore.
 func (c *Client) Read(path string) (string, error) {
 	p, err := c.submitBytes(XsRead, []byte(path), 0x0)
 	if err != nil {
@@ -89,6 +100,7 @@ func (c *Client) Read(path string) (string, error) {
 	return p.payloadString(), nil
 }
 
+// Remove removes a path from XenStore recursively
 func (c *Client) Remove(path string) (string, error) {
 	p, err := c.submitBytes(XsRm, []byte(path), 0x0)
 	if err != nil {
@@ -98,6 +110,7 @@ func (c *Client) Remove(path string) (string, error) {
 	return p.payloadString(), nil
 }
 
+// Write value to XenStore at path.
 func (c *Client) Write(path, value string) (string, error) {
 	buf := bytes.NewBufferString(path)
 	buf.WriteByte(NUL)
@@ -111,6 +124,7 @@ func (c *Client) Write(path, value string) (string, error) {
 	return p.payloadString(), nil
 }
 
+// GetPermissions returns the currently stored permissions for a XenStore path.
 func (c *Client) GetPermissions(path string) (string, error) {
 	p, err := c.submitBytes(XsGetPermissions, []byte(path), 0x0)
 	if err != nil {
@@ -120,6 +134,7 @@ func (c *Client) GetPermissions(path string) (string, error) {
 	return p.payloadString(), nil
 }
 
+// SetPermissions sets the permissions for a path in XenStore.
 func (c *Client) SetPermissions(path string, perms []string) (string, error) {
 	buf := bytes.NewBufferString(path)
 	for _, perm := range perms {
@@ -135,6 +150,7 @@ func (c *Client) SetPermissions(path string, perms []string) (string, error) {
 	return p.payloadString(), nil
 }
 
+// GetDomainPath
 func (c *Client) GetDomainPath(path string) (string, error) {
 	p, err := c.submitBytes(XsGetDomainPath, []byte(path), 0x0)
 	if err != nil {
@@ -144,6 +160,7 @@ func (c *Client) GetDomainPath(path string) (string, error) {
 	return p.payloadString(), nil
 }
 
+// Watch places a watch on a particular XenStore path
 func (c *Client) Watch(path, token string) (chan *Packet, error) {
 	buf := bytes.NewBufferString(path)
 	buf.WriteByte(NUL)
@@ -157,6 +174,7 @@ func (c *Client) Watch(path, token string) (chan *Packet, error) {
 	return c.router.Send(p)
 }
 
+// UnWatch removes a previously-set watch on a XenStore path.
 func (c *Client) UnWatch(path, token string) error {
 	buf := bytes.NewBufferString(path)
 	buf.WriteByte(NUL)
