@@ -87,7 +87,8 @@ func ValidPath(path string) bool {
 	}
 
 	// Some more specific rules regarding separators
-	if (len(path) > 1 && strings.HasSuffix(path, "/")) || strings.Contains(path, "//") {
+	if (len(path) > 1 && strings.HasSuffix(path, XenStorePathSeparator)) ||
+		strings.Contains(path, XenStorePathSeparator+XenStorePathSeparator) {
 		return false
 	}
 	return true
