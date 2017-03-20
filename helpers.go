@@ -20,7 +20,7 @@ func JoinXenStorePath(paths ...string) string {
 	var fullpath string
 
 	for i, path := range paths {
-		firstElem := i == 0
+		firstElem := (i == 0)
 
 		if !firstElem && strings.HasPrefix(path, "/") {
 			path = path[1:]
