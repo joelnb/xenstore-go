@@ -13,11 +13,12 @@ func StdOutIsPipe() (bool, error) {
 
 	fi, err := os.Stdout.Stat()
 	if err != nil {
-		return false, err
+		return true, err
 	}
 
 	if (fi.Mode() & os.ModeCharDevice) == 0 {
 		return true, nil
 	}
+
 	return false, nil
 }

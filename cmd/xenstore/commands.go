@@ -12,7 +12,7 @@ import (
 func ReadCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("please specify the XenStore path to read", 3)
+		return cli.Exit("Please specify the XenStore path to read", 3)
 	}
 
 	val, err := client.Read(path)
@@ -27,7 +27,7 @@ func ReadCommand(ctx *cli.Context) error {
 func RmCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("please specify the XenStore path to remove", 3)
+		return cli.Exit("Please specify the XenStore path to remove", 3)
 	}
 
 	val, err := client.Remove(path)
@@ -42,12 +42,12 @@ func RmCommand(ctx *cli.Context) error {
 func WriteCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("please specify the XenStore path to write", 3)
+		return cli.Exit("Please specify the XenStore path to write", 3)
 	}
 
 	val := ctx.Args().Get(1)
 	if path == "" {
-		return cli.Exit("please specify the value to write", 3)
+		return cli.Exit("Please specify the value to write", 3)
 	}
 
 	val, err := client.Write(path, val)
@@ -62,7 +62,7 @@ func WriteCommand(ctx *cli.Context) error {
 func ListCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("please specify the XenStore path to read", 3)
+		return cli.Exit("Please specify the XenStore path to list", 3)
 	}
 
 	subpaths, err := client.List(path)
@@ -91,12 +91,12 @@ func ListCommand(ctx *cli.Context) error {
 func WatchCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("please specify the XenStore path to watch", 3)
+		return cli.Exit("Please specify the XenStore path to watch", 3)
 	}
 
 	token := ctx.Args().Get(1)
 	if token == "" {
-		return cli.Exit("please specify the token to create the watch with", 3)
+		return cli.Exit("Please specify the token to create the watch with", 3)
 	}
 
 	ch, err := client.Watch(path, token)

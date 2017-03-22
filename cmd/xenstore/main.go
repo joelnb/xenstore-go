@@ -19,16 +19,16 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "socket-path",
-				Usage: "path to the xenstore unix socket",
+				Usage: "Path to the xenstore unix socket",
 			},
 			&cli.StringFlag{
 				Name:  "xenbus-path",
-				Usage: "path to the xenbus device",
+				Usage: "Path to the xenbus device",
 			},
 			&cli.BoolFlag{
 				Name:    "use-socket",
 				Aliases: []string{"s"},
-				Usage:   "use the socket rather than the xenbus device",
+				Usage:   "Use the socket rather than the xenbus device",
 			},
 		},
 		Before: func(ctx *cli.Context) error {
