@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/joelnb/xenstore-go"
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli"
 )
 
 var client *xenstore.Client

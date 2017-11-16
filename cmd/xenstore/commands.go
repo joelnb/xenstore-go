@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/joelnb/xenstore-go"
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli"
 )
 
 func ReadCommand(ctx *cli.Context) error {

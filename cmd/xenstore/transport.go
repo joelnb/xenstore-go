@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/joelnb/xenstore-go"
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli"
 )
 
 func getTransport(ctx *cli.Context) (xenstore.Transport, error) {
