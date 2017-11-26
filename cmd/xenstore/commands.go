@@ -12,12 +12,12 @@ import (
 func ReadCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("Please specify the XenStore path to read", 3)
+		return cli.NewExitError("Please specify the XenStore path to read", 3)
 	}
 
 	val, err := client.Read(path)
 	if err != nil {
-		return cli.Exit(err.Error(), 2)
+		return cli.NewExitError(err.Error(), 2)
 	}
 
 	fmt.Println(val)
@@ -27,12 +27,12 @@ func ReadCommand(ctx *cli.Context) error {
 func RmCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("Please specify the XenStore path to remove", 3)
+		return cli.NewExitError("Please specify the XenStore path to remove", 3)
 	}
 
 	val, err := client.Remove(path)
 	if err != nil {
-		return cli.Exit(err.Error(), 2)
+		return cli.NewExitError(err.Error(), 2)
 	}
 
 	fmt.Println(val)
@@ -42,17 +42,17 @@ func RmCommand(ctx *cli.Context) error {
 func WriteCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("Please specify the XenStore path to write", 3)
+		return cli.NewExitError("Please specify the XenStore path to write", 3)
 	}
 
 	val := ctx.Args().Get(1)
 	if path == "" {
-		return cli.Exit("Please specify the value to write", 3)
+		return cli.NewExitError("Please specify the value to write", 3)
 	}
 
 	val, err := client.Write(path, val)
 	if err != nil {
-		return cli.Exit(err.Error(), 2)
+		return cli.NewExitError(err.Error(), 2)
 	}
 
 	fmt.Println(val)
@@ -62,12 +62,12 @@ func WriteCommand(ctx *cli.Context) error {
 func ListCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("Please specify the XenStore path to list", 3)
+		return cli.NewExitError("Please specify the XenStore path to list", 3)
 	}
 
 	subpaths, err := client.List(path)
 	if err != nil {
-		return cli.Exit(err.Error(), 2)
+		return cli.NewExitError(err.Error(), 2)
 	}
 
 	if ctx.Bool("long") {
@@ -76,7 +76,7 @@ func ListCommand(ctx *cli.Context) error {
 
 			perms, err := client.GetPermissions(fullpath)
 			if err != nil {
-				return cli.Exit(err.Error(), 2)
+				return cli.NewExitError(err.Error(), 2)
 			}
 
 			fmt.Println(fullpath, perms)
@@ -91,35 +91,35 @@ func ListCommand(ctx *cli.Context) error {
 func WatchCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.Exit("Please specify the XenStore path to watch", 3)
+		return cli.NewExitError("Please specify the XenStore path to watch", 3)
 	}
 
 	token := ctx.Args().Get(1)
 	if token == "" {
-		return cli.Exit("Please specify the token to create the watch with", 3)
+		return cli.NewExitError("Please specify the token to create the watch with", 3)
 	}
 
 	ch, err := client.Watch(path, token)
 	if err != nil {
-		return cli.Exit(err.Error(), 2)
+		return cli.NewExitError(err.Error(), 2)
 	}
 
 	for {
 		rsp := <-ch
 
 		if err := rsp.Check(); err != nil {
-			return cli.Exit(err.Error(), 2)
+			return cli.NewExitError(err.Error(), 2)
 		} else {
 			// decoded, err := base64.StdEncoding.WithPadding(base64.StdPadding).DecodeString(string(rsp.Payload))
 			// if err != nil {
 			//  continue
-			//  //return cli.Exit(fmt.Sprintf("decode error: %s", err), 7)
+			//  //return cli.NewExitError(fmt.Sprintf("decode error: %s", err), 7)
 			// }
 			// rsp.Payload = decoded
 
 			rspJson, err := json.Marshal(rsp)
 			if err != nil {
-				return cli.Exit(err.Error(), 2)
+				return cli.NewExitError(err.Error(), 2)
 			}
 
 			fmt.Println(string(rspJson))

@@ -26,9 +26,8 @@ func main() {
 				Usage: "Path to the xenbus device",
 			},
 			&cli.BoolFlag{
-				Name:    "use-socket",
-				Aliases: []string{"s"},
-				Usage:   "Use the socket rather than the xenbus device",
+				Name:  "use-socket, s",
+				Usage: "Use the socket rather than the xenbus device",
 			},
 		},
 		Before: func(ctx *cli.Context) error {
@@ -47,44 +46,43 @@ func main() {
 			client.Close()
 			return nil
 		},
-		Commands: []*cli.Command{
-			&cli.Command{
+		Commands: []cli.Command{
+			cli.Command{
 				Name:   "read",
 				Flags:  []cli.Flag{},
 				Usage:  "Read values from xenstore by path",
 				Action: ReadCommand,
 			},
-			&cli.Command{
+			cli.Command{
 				Name:   "write",
 				Flags:  []cli.Flag{},
 				Usage:  "Write values to xenstore by path",
 				Action: WriteCommand,
 			},
-			&cli.Command{
+			cli.Command{
 				Name:   "rm",
 				Flags:  []cli.Flag{},
 				Usage:  "Remove a value from xenstore by path",
 				Action: RmCommand,
 			},
-			&cli.Command{
+			cli.Command{
 				Name:    "list",
 				Aliases: []string{"ls"},
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
-						Name:    "long",
-						Aliases: []string{"l"},
+						Name: "long, l",
 					},
 				},
 				Usage:  "List values from xenstore by path",
 				Action: ListCommand,
 			},
-			&cli.Command{
+			cli.Command{
 				Name:   "watch",
 				Flags:  []cli.Flag{},
 				Usage:  "Watch a XenStore path for changes",
 				Action: WatchCommand,
 			},
-			&cli.Command{
+			cli.Command{
 				Name:   "info",
 				Flags:  []cli.Flag{},
 				Usage:  "Display system information",
