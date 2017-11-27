@@ -10,7 +10,8 @@ DEPS = $(wildcard *.go) $(wildcard cmd/xenstore/*.go)
 
 OUTPUTS = \
 	xenstore-linux-amd64 \
-	xenstore-linux-amd64-static
+	xenstore-linux-amd64-static \
+	xenstore-windows-amd64.exe
 
 .PHONY: all
 all: $(OUTPUTS)
@@ -29,3 +30,6 @@ xenstore-linux-amd64: $(DEPS)
 
 xenstore-linux-amd64-static: $(DEPS)
 	env GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s $(COMMON_LDFLAGS)" -o $@ ./cmd/xenstore
+
+xenstore-windows-amd64.exe: $(DEPS)
+	env GOOS=windows GOARCH=amd64 go build $(COMMON_ARGS) -o $@ ./cmd/xenstore

@@ -2,10 +2,22 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/StackExchange/wmi"
+  packages = ["."]
+  revision = "ea383cf3ba6ec950874b8486cd72356d007c768f"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/go-ole/go-ole"
+  packages = [".","oleutil"]
+  revision = "a41e3c4b706f6ae8dfbff342b06e40fa4d2d0506"
 
 [[projects]]
   branch = "master"
@@ -34,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a1794587d367f7b1f7cd53c567af6ad821a621f51462b2a78fb9d7f2dca1837f"
+  inputs-digest = "8f5fe94ed7b454e54cdf8fd1b74df78ae5a871265455588bae4a346f89980f0f"
   solver-name = "gps-cdcl"
   solver-version = 1
