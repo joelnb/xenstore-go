@@ -8,7 +8,7 @@ Vagrant.configure(2) do |config|
     ansible.playbook = 'xen.yml'
   end
 
-  if Vagrant.has_plugin?('vagrant-vbguest')
+  if Vagrant.has_plugin? 'vagrant-vbguest'
     # Don't try and install guest drivers
     config.vbguest.auto_update = false
     config.vbguest.no_remote = true
