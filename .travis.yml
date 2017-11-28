@@ -1,0 +1,7 @@
+go:
+  - 1.8.x
+go_import_path: github.com/joelnb/xenstore-go
+language: go
+script:
+  - go test -v .
+  - diff -u <(echo -n) <(gofmt -d ./)
