@@ -192,3 +192,34 @@ func (c *Client) UnWatch(path, token string) error {
 
 	return nil
 }
+
+// NodeInfo
+type NodeInfo struct {
+	IsDir bool
+}
+
+// WalkFunc
+type WalkFunc func(path string, info NodeInfo, err error)
+
+// Walk traverses the provided path recursively and calls the provided function for
+// every node in the tree..
+func (c *Client) Walk(action WalkFunc, path ...string) error {
+	_, err := c.walkHelper(action, path...)
+	return err
+}
+
+func (c *Client) walkHelper(action WalkFunc, path ...string) ([]string, error) {
+	fullpath := JoinXenStorePath(path...)
+	contents, err := c.List(fullpath)
+	if err != nil {
+		return []string{}, nil
+	}
+
+	action(fullpath, NodeInfo{}, nil)
+
+	for _, subpath := range contents {
+		c.walkHelper(action, append(path, subpath)...)
+	}
+
+	return path[:len(path)-1], nil
+}

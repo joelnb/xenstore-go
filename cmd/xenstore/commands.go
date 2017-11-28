@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -104,6 +105,44 @@ func ListCommand(ctx *cli.Context) error {
 		}
 	} else {
 		fmt.Println(strings.Trim(fmt.Sprint(subpaths), "[]"))
+	}
+
+	return nil
+}
+
+func WalkCommand(ctx *cli.Context) error {
+	path := ctx.Args().First()
+	if path == "" {
+		path = "/"
+	}
+
+	allNodes := map[string]xenstore.NodeInfo{}
+	var errors []error
+
+	jsonOutput := ctx.Bool("json")
+
+	err := client.Walk(func(path string, info xenstore.NodeInfo, err error) {
+		if !jsonOutput {
+			PrintFullWidth(path, fmt.Sprintf("%+v", info))
+		}
+
+		if err != nil {
+			errors = append(errors, err)
+		}
+
+		allNodes[path] = info
+	}, path)
+	if err != nil {
+		return cli.NewExitError(err.Error(), 2)
+	}
+
+	if jsonOutput {
+		b, err := json.MarshalIndent(allNodes, "", "    ")
+		if err != nil {
+			return cli.NewExitError(err.Error(), 2)
+		}
+
+		os.Stdout.Write(b)
 	}
 
 	return nil

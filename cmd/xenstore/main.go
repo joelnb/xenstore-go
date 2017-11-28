@@ -83,6 +83,16 @@ func main() {
 				Action: VMPathCommand,
 			},
 			cli.Command{
+				Name: "walk",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name: "json, j",
+					},
+				},
+				Usage:  "Walk the entire XenStore and display all of the values",
+				Action: WalkCommand,
+			},
+			cli.Command{
 				Name:   "watch",
 				Flags:  []cli.Flag{},
 				Usage:  "Watch a XenStore path for changes",
