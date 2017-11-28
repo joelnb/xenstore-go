@@ -24,18 +24,18 @@ func JoinXenStorePath(paths ...string) string {
 	for i, path := range paths {
 		firstElem := (i == 0)
 
-		if !firstElem && strings.HasPrefix(path, XenStorePathSeparator) {
-			path = path[1:]
-		}
-
-		if strings.HasSuffix(path, XenStorePathSeparator) {
+		if strings.HasSuffix(path, XenStorePathSeparator) && (!firstElem || len(paths) > 1) {
 			path = path[:len(path)-1]
 		}
 
-		if firstElem {
-			fullpath = fullpath + path
-		} else {
+		if !firstElem {
+			if strings.HasPrefix(path, XenStorePathSeparator) {
+				path = path[1:]
+			}
+
 			fullpath = fullpath + XenStorePathSeparator + path
+		} else {
+			fullpath = fullpath + path
 		}
 	}
 

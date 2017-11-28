@@ -75,4 +75,10 @@ func TestPathJoin(t *testing.T) {
 
 	assert.Equal(t, "/local/domain/0/name", JoinXenStorePath("/local", "domain", "0", "name"),
 		"Should behave the same for larger lists of elements")
+
+	assert.Equal(t, "/tools/vm", JoinXenStorePath("/", "tools", "vm"),
+		"Should preserve a separate leading slash")
+
+	assert.Equal(t, "/", JoinXenStorePath("/"),
+		"Should preserve a leading slash even if it is the only element")
 }
