@@ -4,4 +4,4 @@ go_import_path: github.com/joelnb/xenstore-go
 language: go
 script:
   - go test -v .
-  - diff -u <(echo -n) <(gofmt -d ./)
+  - diff -u <(echo -n) <(gofmt -d *.go ./cmd)
