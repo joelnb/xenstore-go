@@ -1,9 +1,14 @@
 .DEFAULT_GOAL := all
 
+RELEASEBUILD = false
+
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_DIRTY = $(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 
 COMMON_LDFLAGS = -X main.GitCommit='$(GIT_COMMIT)$(GIT_DIRTY)'
+ifeq ($(RELEASEBUILD),true)
+	COMMON_LDFLAGS += -X main.VersionPrerelease=''
+endif
 COMMON_ARGS = -ldflags "$(COMMON_LDFLAGS)"
 
 DEPS = $(wildcard *.go) $(wildcard cmd/xenstore/*.go)
