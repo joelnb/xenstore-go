@@ -17,7 +17,7 @@ type Transport interface {
 }
 
 // ReadWriteTransport is an implementation of the Transport interface which works for any
-// io.ReadWriteCloser..
+// io.ReadWriteCloser.
 type ReadWriteTransport struct {
 	rw   io.ReadWriteCloser
 	open bool

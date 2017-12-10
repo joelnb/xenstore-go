@@ -151,7 +151,7 @@ func (c *Client) SetPermissions(path string, perms []string) (string, error) {
 	return p.payloadString(), nil
 }
 
-// GetDomainPath
+// GetDomainPath returns the path to a particular domain's keys under XenStore.
 func (c *Client) GetDomainPath(domid int) (string, error) {
 	s := strconv.Itoa(domid)
 
@@ -163,7 +163,8 @@ func (c *Client) GetDomainPath(domid int) (string, error) {
 	return p.payloadString(), nil
 }
 
-// Watch places a watch on a particular XenStore path
+// Watch places a watch on a particular XenStore path. A packet is sent over the
+// returned channel every time an event happens on the watched path.
 func (c *Client) Watch(path, token string) (chan *Packet, error) {
 	buf := bytes.NewBufferString(path)
 	buf.WriteByte(NUL)
@@ -193,8 +194,9 @@ func (c *Client) UnWatch(path, token string) error {
 	return nil
 }
 
-// NodeInfo
+// NodeInfo contains the set of information about a particular node in XenStore.
 type NodeInfo struct {
+	// IsDir shows whether this particular node has sub keys under it.
 	IsDir bool
 }
 
@@ -202,12 +204,14 @@ type NodeInfo struct {
 type WalkFunc func(path string, info NodeInfo, err error)
 
 // Walk traverses the provided path recursively and calls the provided function for
-// every node in the tree..
+// every node in the tree.
 func (c *Client) Walk(action WalkFunc, path ...string) error {
 	_, err := c.walkHelper(action, path...)
 	return err
 }
 
+// walkHelper does the actual work for the walk method. It recurses through the whole
+// XenStore, calling the action function for each key it finds.
 func (c *Client) walkHelper(action WalkFunc, path ...string) ([]string, error) {
 	fullpath := JoinXenStorePath(path...)
 	contents, err := c.List(fullpath)

@@ -51,7 +51,8 @@ func init() {
 	counterMutex = &sync.Mutex{}
 }
 
-// Event implements a XenStore event
+// Event implements a XenStore event which is passed to notify a watcher of a particular path
+// that something has happened to the path.
 type Event struct {
 	Path  string
 	Token string
