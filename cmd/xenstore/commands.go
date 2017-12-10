@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/joelnb/xenstore-go"
@@ -56,6 +57,26 @@ func WriteCommand(ctx *cli.Context) error {
 	}
 
 	fmt.Println(val)
+	return nil
+}
+
+func VMPathCommand(ctx *cli.Context) error {
+	domid := ctx.Args().First()
+	if domid == "" {
+		return cli.NewExitError("Please specify the domid of the VM", 3)
+	}
+
+	domidInt, err := strconv.Atoi(domid)
+	if err != nil {
+		return cli.NewExitError(err.Error(), 2)
+	}
+
+	path, err := client.GetDomainPath(domidInt)
+	if err != nil {
+		return cli.NewExitError(err.Error(), 2)
+	}
+
+	fmt.Println(path)
 	return nil
 }
 

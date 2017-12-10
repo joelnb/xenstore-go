@@ -2,6 +2,7 @@ package xenstore
 
 import (
 	"bytes"
+	"strconv"
 	"strings"
 )
 
@@ -151,8 +152,10 @@ func (c *Client) SetPermissions(path string, perms []string) (string, error) {
 }
 
 // GetDomainPath
-func (c *Client) GetDomainPath(path string) (string, error) {
-	p, err := c.submitBytes(XsGetDomainPath, []byte(path), 0x0)
+func (c *Client) GetDomainPath(domid int) (string, error) {
+	s := strconv.Itoa(domid)
+
+	p, err := c.submitBytes(XsGetDomainPath, []byte(s), 0x0)
 	if err != nil {
 		return "", err
 	}

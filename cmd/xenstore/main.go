@@ -77,6 +77,12 @@ func main() {
 				Action: ListCommand,
 			},
 			cli.Command{
+				Name:   "vm-path",
+				Flags:  []cli.Flag{},
+				Usage:  "Get the path for a VM",
+				Action: VMPathCommand,
+			},
+			cli.Command{
 				Name:   "watch",
 				Flags:  []cli.Flag{},
 				Usage:  "Watch a XenStore path for changes",
