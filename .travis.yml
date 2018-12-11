@@ -1,5 +1,5 @@
 go:
-  - 1.8.x
+  - 1.11.x
 go_import_path: github.com/joelnb/xenstore-go
 language: go
 script:
