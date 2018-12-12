@@ -1,0 +1,10 @@
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
+# github.com/lunixbochs/struc v0.0.0-20180408203800-02e4c2afbb2a
+github.com/lunixbochs/struc
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/stretchr/testify v1.2.2
+github.com/stretchr/testify/assert
+# github.com/urfave/cli v1.20.0
+github.com/urfave/cli
