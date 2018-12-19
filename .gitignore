@@ -2,6 +2,7 @@
 
 # Built files
 xenstore
+!cmd/xenstore
 xenstore-*
 xenstore_*
 *.exe
