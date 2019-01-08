@@ -2,50 +2,74 @@
 
 
 [[projects]]
-  branch = "master"
+  digest = "1:f82b8ac36058904227087141017bb82f4b0fc58272990a4cdae3e2d6d222644e"
   name = "github.com/StackExchange/wmi"
   packages = ["."]
-  revision = "ea383cf3ba6ec950874b8486cd72356d007c768f"
+  pruneopts = ""
+  revision = "5d049714c4a64225c3c79a7cf7d02f7fb5b96338"
+  version = "1.0.0"
 
 [[projects]]
+  digest = "1:0deddd908b6b4b768cfc272c16ee61e7088a60f7fe2f06c547bd3d8e1f8b8e77"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  pruneopts = ""
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:96187f5a8440ee3ea9207115cbd0fa702d30ee3e1708c77f9b762e6697e1c13a"
   name = "github.com/go-ole/go-ole"
-  packages = [".","oleutil"]
-  revision = "a41e3c4b706f6ae8dfbff342b06e40fa4d2d0506"
+  packages = [
+    ".",
+    "oleutil",
+  ]
+  pruneopts = ""
+  revision = "39dc8486bd0952279431257138bc428275b86797"
 
 [[projects]]
   branch = "master"
+  digest = "1:f880d3b7dfb23226b5601f4e904c60b15cd3c890708957409bbfc67f2720f8f4"
   name = "github.com/lunixbochs/struc"
   packages = ["."]
-  revision = "ef56447db6a068ad9e52bc54a1aff5fb9e1ed2dd"
+  pruneopts = ""
+  revision = "02e4c2afbb2ac4bae6876f52c8273fc4cf5a4b0a"
 
 [[projects]]
+  digest = "1:256484dbbcd271f9ecebc6795b2df8cad4c458dd0f5fd82a8c2fa0c29f233411"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
+  pruneopts = ""
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:c587772fb8ad29ad4db67575dad25ba17a51f072ff18a22b4f0257a4d9c24f75"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
-  revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
-  version = "v1.1.4"
+  pruneopts = ""
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
+  digest = "1:e85837cb04b78f61688c6eba93ea9d14f60d611e2aaf8319999b1a60d2dafbfa"
   name = "github.com/urfave/cli"
   packages = ["."]
+  pruneopts = ""
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8f5fe94ed7b454e54cdf8fd1b74df78ae5a871265455588bae4a346f89980f0f"
+  input-imports = [
+    "github.com/StackExchange/wmi",
+    "github.com/go-ole/go-ole",
+    "github.com/go-ole/go-ole/oleutil",
+    "github.com/lunixbochs/struc",
+    "github.com/stretchr/testify/assert",
+    "github.com/urfave/cli",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
