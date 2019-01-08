@@ -109,11 +109,13 @@ func internalOleWmiQuery(query string, connectServerArgs ...interface{}) (*ole.I
 func internalOleWmiQuerySingle(query string, connectServerArgs ...interface{}) (*ole.IDispatch, error) {
 	result, err := internalOleWmiQuery(query, connectServerArgs...)
 	if err != nil {
+		fmt.Println("Returning error1")
 		return nil, err
 	}
 
 	count, err := oleInt64(result, "Count")
 	if err != nil {
+		fmt.Println("Returning error2")
 		return nil, err
 	}
 	if count != 1 {
@@ -122,6 +124,7 @@ func internalOleWmiQuerySingle(query string, connectServerArgs ...interface{}) (
 
 	itemRaw, err := oleutil.CallMethod(result, "ItemIndex", 0)
 	if err != nil {
+		fmt.Println("Returning error3")
 		return nil, err
 	}
 	item := itemRaw.ToIDispatch()
@@ -136,12 +139,17 @@ func NewWinPVTransport() error {
 	fmt.Println(query)
 
 	result, err := OleWMIQuerySingle(query, nil, "root\\wmi")
+	if err != nil {
+		fmt.Println(result)
+		return err
+	}
+	fmt.Println(result)
 
-	// count, err := oleInt64(result, "Count")
-	// if err != nil {
-	//  log.Fatal(err)
-	// }
-	// fmt.Println(count)
+	count, err := oleInt64(result, "Count")
+	if err != nil {
+		return err
+	}
+	fmt.Println(count)
 
 	// Initialize a slice with Count capacity
 	// dv.Set(reflect.MakeSlice(dv.Type(), 0, int(count)))
