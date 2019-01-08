@@ -43,7 +43,10 @@ func main() {
 			return nil
 		},
 		After: func(ctx *cli.Context) error {
-			client.Close()
+			if client != nil {
+				client.Close()
+			}
+
 			return nil
 		},
 		Commands: []cli.Command{
