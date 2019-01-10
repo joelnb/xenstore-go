@@ -48,7 +48,7 @@ func main() {
 				client.Close()
 			}
 
-			return nil
+			return client.Error()
 		},
 		Commands: []cli.Command{
 			cli.Command{

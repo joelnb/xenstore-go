@@ -11,6 +11,7 @@ import (
 type Client struct {
 	transport Transport
 	router    *Router
+	stopError error
 }
 
 // NewUnixSocketClient creates a new Client which will be connected to an underlying
@@ -44,7 +45,9 @@ func NewClient(t Transport) *Client {
 	}
 
 	// Run router in separate goroutine
-	go c.router.Start()
+	go func() {
+		c.stopError = c.router.Start()
+	}()
 
 	return c
 }
@@ -53,6 +56,10 @@ func NewClient(t Transport) *Client {
 func (c *Client) Close() error {
 	c.router.Stop()
 	return c.transport.Close()
+}
+
+func (c *Client) Error() error {
+	return c.stopError
 }
 
 // submitBytes submits a Packet to XenStore and reads a Packet in reply. The response packet
