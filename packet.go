@@ -1,6 +1,7 @@
 package xenstore
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -111,9 +112,27 @@ func (p *Packet) payloadString() string {
 // Checks whether the current Packet contains an error response & returns a Go error if so
 func (p *Packet) Check() error {
 	if p.Header.Op == XsError {
-		trimmed := strings.Trim(string(p.Payload), "\x00")
-		return Error(trimmed)
+		return Error(p.payloadString())
 	}
 
 	return nil
+}
+
+// String returns a JSON representation of the packet with the payload split into all of
+// the constituent parts.
+func (p *Packet) String() string {
+	prettyResponse := struct {
+		Header  *PacketHeader
+		Payload []string
+	}{
+		Header:  p.Header,
+		Payload: strings.Split(p.payloadString(), "\u0000"),
+	}
+
+	rspJSON, err := json.Marshal(prettyResponse)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(rspJSON)
 }

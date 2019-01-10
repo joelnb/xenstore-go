@@ -1,12 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/joelnb/xenstore-go"
+	xenstore "github.com/joelnb/xenstore-go"
 	"github.com/urfave/cli"
 )
 
@@ -131,19 +130,7 @@ func WatchCommand(ctx *cli.Context) error {
 		if err := rsp.Check(); err != nil {
 			return cli.NewExitError(err.Error(), 2)
 		} else {
-			// decoded, err := base64.StdEncoding.WithPadding(base64.StdPadding).DecodeString(string(rsp.Payload))
-			// if err != nil {
-			//  continue
-			//  //return cli.NewExitError(fmt.Sprintf("decode error: %s", err), 7)
-			// }
-			// rsp.Payload = decoded
-
-			rspJson, err := json.Marshal(rsp)
-			if err != nil {
-				return cli.NewExitError(err.Error(), 2)
-			}
-
-			fmt.Println(string(rspJson))
+			fmt.Println(rsp)
 		}
 	}
 
