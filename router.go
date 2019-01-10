@@ -1,6 +1,7 @@
 package xenstore
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -77,6 +78,6 @@ func (r *Router) sendToChannel(pkt *Packet) {
 	if chnl, ok := r.channelMap[pkt.Header.RqId]; ok {
 		chnl <- pkt
 	} else {
-		panic("no channel to send to!")
+		panic(fmt.Sprintf("no channel to send packet for %d to!", pkt.Header.RqId))
 	}
 }
