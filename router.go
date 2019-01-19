@@ -38,12 +38,14 @@ OUTER:
 	for r.loop {
 		p, err := r.transport.Receive()
 		if err != nil {
-			// If the error is that the file was already closed then it likely
-			// means that we closed it so swallow this specific error.
-			switch v := err.(type) {
-			case *os.PathError:
-				if v.Err == os.ErrClosed {
-					break OUTER
+			if !r.loop {
+				// If the error is that the file was already closed then it likely
+				// means that we closed it so swallow this specific error.
+				switch v := err.(type) {
+				case *os.PathError:
+					if v.Err == os.ErrClosed {
+						break OUTER
+					}
 				}
 			}
 
