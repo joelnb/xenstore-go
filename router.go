@@ -2,6 +2,7 @@ package xenstore
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 )
@@ -33,9 +34,19 @@ type Router struct {
 func (r *Router) Start() error {
 	r.loop = true
 
+OUTER:
 	for r.loop {
 		p, err := r.transport.Receive()
 		if err != nil {
+			// If the error is that the file was already closed then it likely
+			// means that we closed it so swallow this specific error.
+			switch v := err.(type) {
+			case *os.PathError:
+				if v.Err == os.ErrClosed {
+					break OUTER
+				}
+			}
+
 			return err
 		}
 

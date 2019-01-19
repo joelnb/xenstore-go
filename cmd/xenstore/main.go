@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/joelnb/xenstore-go"
+	xenstore "github.com/joelnb/xenstore-go"
 	"github.com/urfave/cli"
 )
 

@@ -34,10 +34,18 @@ func (r *ReadWriteTransport) Close() error {
 }
 
 func (r *ReadWriteTransport) Send(p *Packet) error {
+	if !r.open {
+		panic("Send on closed transport")
+	}
+
 	return p.Pack(r.rw)
 }
 
 func (r *ReadWriteTransport) Receive() (*Packet, error) {
+	if !r.open {
+		panic("Receive on closed transport")
+	}
+
 	p := &Packet{}
 	return p, p.Unpack(r.rw)
 }
