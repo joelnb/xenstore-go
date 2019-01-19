@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 
 	xenstore "github.com/joelnb/xenstore-go"
 	"github.com/urfave/cli"
@@ -124,13 +127,27 @@ func WatchCommand(ctx *cli.Context) error {
 		return cli.NewExitError(err.Error(), 2)
 	}
 
-	for {
-		rsp := <-ch
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-		if err := rsp.Check(); err != nil {
-			return cli.NewExitError(err.Error(), 2)
-		} else {
-			fmt.Println(rsp)
+OUTER:
+	for {
+		select {
+		case rsp := <-ch:
+			if err := rsp.Check(); err != nil {
+				return cli.NewExitError(err.Error(), 2)
+			} else {
+				fmt.Println(rsp)
+			}
+
+		case sig := <-sigs:
+			fmt.Printf("Got signal %s, removing watch and exiting!", sig)
+
+			if err := client.UnWatch(path, token); err != nil {
+				return cli.NewExitError(err.Error(), 2)
+			}
+
+			break OUTER
 		}
 	}
 
