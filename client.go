@@ -195,7 +195,12 @@ func (c *Client) UnWatch(path, token string) error {
 		return err
 	}
 
-	c.router.removeChannel(p.Header.RqId)
+	// Ensure the returned packet was not an error
+	if err := p.Check(); err != nil {
+		return err
+	}
+
+	c.router.removeWatchChannel(token)
 
 	return nil
 }

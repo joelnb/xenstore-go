@@ -2,6 +2,7 @@ package xenstore
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -11,6 +12,7 @@ func NewRouter(t Transport) *Router {
 	return &Router{
 		transport:  t,
 		channelMap: map[uint32]chan *Packet{},
+		watchMap:   map[string][]chan *Packet{},
 		lock:       sync.Mutex{},
 		loop:       true,
 	}
@@ -22,6 +24,7 @@ func NewRouter(t Transport) *Router {
 type Router struct {
 	transport  Transport
 	channelMap map[uint32]chan *Packet
+	watchMap   map[string][]chan *Packet
 	lock       sync.Mutex
 	loop       bool
 }
@@ -54,6 +57,16 @@ func (r *Router) Send(pkt *Packet) (chan *Packet, error) {
 		return nil, err
 	}
 
+	if pkt.Header.Op == XsWatch {
+		payloadParts := strings.Split(pkt.payloadString(), "\u0000")
+
+		if _, ok := r.watchMap[payloadParts[1]]; !ok {
+			r.watchMap[payloadParts[1]] = []chan *Packet{}
+		}
+
+		r.watchMap[payloadParts[1]] = append(r.watchMap[payloadParts[1]], c)
+	}
+
 	r.channelMap[pkt.Header.RqId] = c
 
 	return c, nil
@@ -71,13 +84,33 @@ func (r *Router) removeChannel(id uint32) {
 	delete(r.channelMap, id)
 }
 
+func (r *Router) removeWatchChannel(token string) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	delete(r.watchMap, token)
+}
+
 func (r *Router) sendToChannel(pkt *Packet) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	if chnl, ok := r.channelMap[pkt.Header.RqId]; ok {
-		chnl <- pkt
+	if pkt.Header.Op == XsWatchEvent {
+		payloadParts := strings.Split(pkt.payloadString(), "\u0000")
+		watchToken := payloadParts[1]
+
+		if channels, ok := r.watchMap[watchToken]; ok {
+			for _, chnl := range channels {
+				chnl <- pkt
+			}
+		} else {
+			panic(fmt.Sprintf("no channel(s) to send packet for '%s' to!", watchToken))
+		}
 	} else {
-		panic(fmt.Sprintf("no channel to send packet for %d to!", pkt.Header.RqId))
+		if chnl, ok := r.channelMap[pkt.Header.RqId]; ok {
+			chnl <- pkt
+		} else {
+			panic(fmt.Sprintf("no channel to send packet for %d to!", pkt.Header.RqId))
+		}
 	}
 }
