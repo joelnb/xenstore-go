@@ -158,6 +158,8 @@ func InfoCommand(ctx *cli.Context) error {
 	fmt.Println("Socket Path:", xenstore.UnixSocketPath())
 	fmt.Println("XenBus Path:", xenstore.XenBusPath())
 	fmt.Println("ControlDomain:", xenstore.ControlDomain())
+	fmt.Println()
 	fmt.Println("Version:", Version)
+	fmt.Println("GitCommit:", GitCommit)
 	return nil
 }
