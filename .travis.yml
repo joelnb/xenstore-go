@@ -6,7 +6,10 @@ script:
 - go test -v .
 - diff -u <(echo -n) <(gofmt -d *.go ./cmd)
 - gox -ldflags "-X main.GitCommit='$(git rev-parse HEAD)'" -arch "amd64 386" -os "linux" ./cmd/xenstore
+- upx xenstore_linux_*
 before_install:
+- apt-get update -q
+- apt-get install -qy upx
 - go get github.com/mitchellh/gox
 deploy:
   provider: releases
