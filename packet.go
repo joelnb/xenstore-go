@@ -109,6 +109,12 @@ func (p *Packet) payloadString() string {
 	return strings.Trim(string(p.Payload), "\x00")
 }
 
+// Strings returns the strings of the packet with the payload split into all of
+// the constituent parts.
+func (p *Packet) Strings() []string {
+	return strings.Split(p.payloadString(), "\u0000")
+}
+
 // Checks whether the current Packet contains an error response & returns a Go error if so
 func (p *Packet) Check() error {
 	if p.Header.Op == XsError {
@@ -126,7 +132,7 @@ func (p *Packet) String() string {
 		Payload []string
 	}{
 		Header:  p.Header,
-		Payload: strings.Split(p.payloadString(), "\u0000"),
+		Payload: p.Strings(),
 	}
 
 	rspJSON, err := json.Marshal(prettyResponse)
