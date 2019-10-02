@@ -3,7 +3,6 @@ package xenstore
 import (
 	"fmt"
 	"os"
-	"strings"
 	"sync"
 )
 
@@ -71,7 +70,7 @@ func (r *Router) Send(pkt *Packet) (chan *Packet, error) {
 	}
 
 	if pkt.Header.Op == XsWatch {
-		payloadParts := strings.Split(pkt.payloadString(), "\u0000")
+		payloadParts := pkt.Strings()
 
 		if _, ok := r.watchMap[payloadParts[1]]; !ok {
 			r.watchMap[payloadParts[1]] = []chan *Packet{}
@@ -109,7 +108,7 @@ func (r *Router) sendToChannel(pkt *Packet) {
 	defer r.lock.Unlock()
 
 	if pkt.Header.Op == XsWatchEvent {
-		payloadParts := strings.Split(pkt.payloadString(), "\u0000")
+		payloadParts := pkt.Strings()
 		watchToken := payloadParts[1]
 
 		if channels, ok := r.watchMap[watchToken]; ok {
