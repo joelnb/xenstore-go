@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
-	"time"
+	// "time"
 
 	"github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
@@ -20,7 +20,8 @@ var lock sync.Mutex
 type XenProjectXenStoreBase struct {
 	Active       bool
 	InstanceName string
-	XenTime      time.Time
+	// XenTime      time.Time
+	XenTime uint64
 }
 
 type XenProjectXenStoreSession struct {
@@ -139,31 +140,39 @@ func NewWinPVTransport() error {
 	query := wmi.CreateQuery(&base, "")
 	fmt.Println(query)
 
-	result, err := OleWMIQuerySingle(query, nil, "root\\wmi")
+	// result, err := OleWMIQuerySingle(query, nil, "root\\wmi")
+	err := wmi.QueryNamespace(query, &base, "root\\wmi")
 	if err != nil {
-		fmt.Println(result)
+		fmt.Printf("ERR %+v\n", base)
 		return err
 	}
-	fmt.Println(result)
+	fmt.Printf("%+v\n", base)
 
-	count, err := oleInt64(result, "Count")
+	result, err := wmi.CallMethod([]interface{}{}, fmt.Sprintf("\\\\DESKTOP-1H575TI\\root\\wmi:XenProjectXenStoreBase.InstanceName=\"%s\"", base[0].InstanceName), "AddSession", []interface{}{})
 	if err != nil {
+		fmt.Printf("ERR %+v\n", result)
 		return err
 	}
-	fmt.Println(count)
+	fmt.Printf("%+v\n", result)
 
-	// Initialize a slice with Count capacity
-	// dv.Set(reflect.MakeSlice(dv.Type(), 0, int(count)))
+	// count, err := oleInt64(result, "Count")
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println(count)
 
-	// Call AddSession method on the XenProjectXenStoreBase WMI object
-	mresRaw, err := oleutil.CallMethod(result, "AddSession")
-	if err != nil {
-		return err
-	}
-	mres := mresRaw.ToIDispatch()
-	defer mresRaw.Clear()
+	// // Initialize a slice with Count capacity
+	// // dv.Set(reflect.MakeSlice(dv.Type(), 0, int(count)))
 
-	fmt.Printf("%+v\n", mres)
+	// // Call AddSession method on the XenProjectXenStoreBase WMI object
+	// mresRaw, err := oleutil.CallMethod(result, "AddSession")
+	// if err != nil {
+	// 	return err
+	// }
+	// mres := mresRaw.ToIDispatch()
+	// defer mresRaw.Clear()
+
+	// fmt.Printf("%+v\n", mres)
 
 	return nil
 }
