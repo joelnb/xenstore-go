@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
+	log "github.com/sirupsen/logrus"
 	"github.com/yusufpapurcu/wmi"
 )
 
@@ -22,7 +23,7 @@ func (t *WinPVTransport) Close() {
 }
 
 func (t *WinPVTransport) GetBase() (*XenProjectXenStoreBase, error) {
-	fmt.Println("GetBase: Asking for base list")
+	log.Debug("GetBase: Requesting base list")
 
 	var baseList []XenProjectXenStoreBaseProps
 	baseQuery := "SELECT Active, InstanceName, XenTime FROM XenProjectXenStoreBase"
@@ -31,21 +32,24 @@ func (t *WinPVTransport) GetBase() (*XenProjectXenStoreBase, error) {
 		return nil, err
 	}
 
-	// defer func() {
-	// 	for _, item := range baseDispatchList {
-	// 		item.Release()
-	// 	}
-	// }()
+	cleanup := func() {
+		for _, item := range baseDispatchList {
+			item.Release()
+		}
+	}
 
-	fmt.Println("GetBase: Got base list")
+	log.Debugf("GetBase: Got base list %+v", baseList)
 
 	if len(baseList) != len(baseDispatchList) {
+		cleanup()
 		return nil, fmt.Errorf("WinPVTransport.GetBase: unexpected length mismatch (baseList=%d, baseDispatchList=%d)",
 			len(baseList),
 			len(baseDispatchList))
 	} else if len(baseList) == 0 {
+		cleanup()
 		return nil, fmt.Errorf("WinPVTransport.GetBase: Got 0-length list")
 	} else if len(baseList) > 1 {
+		cleanup()
 		return nil, fmt.Errorf("WinPVTransport.GetBase: Unexpected multiple XenProjectXenStoreBase returned")
 	}
 
@@ -56,7 +60,7 @@ func (t *WinPVTransport) GetBase() (*XenProjectXenStoreBase, error) {
 }
 
 func (t *WinPVTransport) GetSession(sessionId int32) (*XenProjectXenStoreSession, error) {
-	fmt.Println("GetSession: Asking for session list")
+	log.Debug("GetSession: Requesting session list")
 
 	var sessionList []XenProjectXenStoreSessionProps
 	sessionQuery := fmt.Sprintf("SELECT Active, ID, InstanceName, SessionID FROM XenProjectXenStoreSession WHERE SessionId=%d", sessionId)
@@ -65,19 +69,24 @@ func (t *WinPVTransport) GetSession(sessionId int32) (*XenProjectXenStoreSession
 		return nil, err
 	}
 
-	// defer func() {
-	// 	for _, item := range sessionDispatchList {
-	// 		item.Release()
-	// 	}
-	// }()
+	cleanup := func() {
+		for _, item := range sessionDispatchList {
+			item.Release()
+		}
+	}
+
+	log.Debug("GetSession: Got session list: %+v", sessionList)
 
 	if len(sessionList) != len(sessionDispatchList) {
+		cleanup()
 		return nil, fmt.Errorf("WinPVTransport.GetSession: unexpected length mismatch (sessionList=%d, sessionDispatchList=%d)",
 			len(sessionList),
 			len(sessionDispatchList))
 	} else if len(sessionList) == 0 {
+		cleanup()
 		return nil, fmt.Errorf("WinPVTransport.GetSession: Got 0-length list")
 	} else if len(sessionList) > 1 {
+		cleanup()
 		return nil, fmt.Errorf("WinPVTransport.GetSession: Unexpected multiple XenProjectXenStoreBase returned")
 	}
 
@@ -88,9 +97,7 @@ func (t *WinPVTransport) GetSession(sessionId int32) (*XenProjectXenStoreSession
 }
 
 func (b *XenProjectXenStoreBase) AddSession(name string) (int32, error) {
-	var sessionId int32
-
-	fmt.Println("Calling AddSession")
+	log.Debug("AddSession: Adding session")
 
 	sessionResultRaw := new(ole.VARIANT)
 	ole.VariantInit(sessionResultRaw)
@@ -103,19 +110,14 @@ func (b *XenProjectXenStoreBase) AddSession(name string) (int32, error) {
 	}
 	defer resultRaw.Clear()
 
-	fmt.Println("Called AddSession")
+	log.Debugf("AddSession: Added session: %+v", sessionResultRaw)
 
-	// Need the ID of the created session
-	fmt.Printf("%+v\n", resultRaw)
-	// result := resultRaw.ToIDispatch()
-	// defer result.Release()
-	fmt.Printf("%+v\n", sessionResultRaw)
-
-	sessionId = sessionResultRaw.Value().(int32)
-	return sessionId, nil
+	return sessionResultRaw.Value().(int32), nil
 }
 
 func (s *XenProjectXenStoreSession) GetValue(path string) (string, error) {
+	log.Debugf("GetValue: Getting value for path: %s", path)
+
 	valueResultRaw := new(ole.VARIANT)
 	ole.VariantInit(valueResultRaw)
 	defer valueResultRaw.Clear()
