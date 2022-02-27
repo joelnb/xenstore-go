@@ -94,7 +94,7 @@ func (s *XenProjectXenStoreSession) GetValue(path string) (string, error) {
 }
 
 func (s *XenProjectXenStoreSession) GetChildren(path string) ([]string, error) {
-	log.Debugf("GetChildren: Getting value for path: %s", path)
+	log.Debugf("GetChildren: Getting children for path: %s", path)
 
 	var stringNodes []string
 

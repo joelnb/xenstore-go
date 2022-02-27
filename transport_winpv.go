@@ -6,6 +6,7 @@ package xenstore
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/yusufpapurcu/wmi"
@@ -13,13 +14,71 @@ import (
 
 var lock sync.Mutex
 
-type WinPVTransport struct{}
+type WinPVTransport struct {
+	base    *XenProjectXenStoreBase
+	session *XenProjectXenStoreSession
+	packet  *Packet
+}
 
-func (t *WinPVTransport) Close() {
+func (t *WinPVTransport) Close() error {
 	wmi.DefaultClient.SWbemServicesClient.Close()
+
+	if t.base != nil {
+		t.base.disp.Release()
+	}
+
+	if t.session != nil {
+		if err := t.session.EndSession(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (t *WinPVTransport) Send(pkt *Packet) error {
+	packet := &Packet{
+		Header: &PacketHeader{
+			Op:   pkt.Header.Op,
+			RqId: pkt.Header.RqId,
+			TxId: pkt.Header.TxId,
+		},
+	}
+
+	if pkt.Header.Op == XsRead {
+		val, err := t.session.GetValue(string(pkt.Payload))
+		if err != nil {
+			return err
+		}
+		packet.Header.Length = uint32(len(val))
+		packet.Payload = []byte(val)
+	}
+
+	return nil
+}
+
+// TODO: The channel part of this is not nice. Would be much better to use a shared channel but
+//       will need to implement a map like the Router has already.
+func (t *WinPVTransport) Receive() (*Packet, error) {
+	c2 := make(chan string, 1)
+	go func() {
+		for t.packet == nil {
+			time.Sleep(500 * time.Millisecond)
+		}
+		c2 <- "result 2"
+	}()
+	select {
+	case res := <-c2:
+		fmt.Println(res)
+	}
+	return t.packet, nil
 }
 
 func (t *WinPVTransport) GetBase() (*XenProjectXenStoreBase, error) {
+	if t.base != nil {
+		return t.base, nil
+	}
+
 	log.Debug("GetBase: Requesting base list")
 
 	var baseList []XenProjectXenStoreBaseProps
@@ -50,14 +109,20 @@ func (t *WinPVTransport) GetBase() (*XenProjectXenStoreBase, error) {
 		return nil, fmt.Errorf("WinPVTransport.GetBase: Unexpected multiple XenProjectXenStoreBase returned")
 	}
 
-	return &XenProjectXenStoreBase{
+	t.base = &XenProjectXenStoreBase{
 		transport:  t,
 		disp:       baseDispatchList[0],
 		Properties: baseList[0],
-	}, nil
+	}
+
+	return t.base, nil
 }
 
 func (t *WinPVTransport) GetSession(sessionId int32) (*XenProjectXenStoreSession, error) {
+	if t.session != nil {
+		return t.session, nil
+	}
+
 	log.Debug("GetSession: Requesting session list")
 
 	var sessionList []XenProjectXenStoreSessionProps
@@ -88,48 +153,46 @@ func (t *WinPVTransport) GetSession(sessionId int32) (*XenProjectXenStoreSession
 		return nil, fmt.Errorf("WinPVTransport.GetSession: Unexpected multiple XenProjectXenStoreBase returned")
 	}
 
-	return &XenProjectXenStoreSession{
+	t.session = &XenProjectXenStoreSession{
 		transport:  t,
 		disp:       sessionDispatchList[0],
 		Properties: sessionList[0],
-	}, nil
-}
-
-func NewWinPVTransport() error {
-	if err := initWmi(); err != nil {
-		return err
 	}
 
-	transport := WinPVTransport{}
-	defer transport.Close()
+	return t.session, nil
+}
+
+func NewWinPVTransport() (*WinPVTransport, error) {
+	if err := initWmi(); err != nil {
+		return nil, err
+	}
+
+	transport := &WinPVTransport{}
 
 	base, err := transport.GetBase()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	session, err := base.AddSession("JoelSession")
 	if err != nil {
-		return err
+		return nil, err
 	}
+	transport.session = session
 
 	value, err := session.GetValue("vm")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	fmt.Println(value)
 
 	children, err := session.GetChildren(value)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	fmt.Printf("%+v\n", children)
 
-	if err := session.EndSession(); err != nil {
-		return err
-	}
-
-	return nil
+	return transport, nil
 }
