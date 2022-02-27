@@ -5,19 +5,15 @@ package xenstore
 
 import (
 	"fmt"
-	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/yusufpapurcu/wmi"
 )
 
-var lock sync.Mutex
-
 type WinPVTransport struct {
-	base    *XenProjectXenStoreBase
-	session *XenProjectXenStoreSession
-	packet  *Packet
+	base       *XenProjectXenStoreBase
+	session    *XenProjectXenStoreSession
+	pktChannel chan *Packet
 }
 
 func (t *WinPVTransport) Close() error {
@@ -54,24 +50,14 @@ func (t *WinPVTransport) Send(pkt *Packet) error {
 		packet.Payload = []byte(val)
 	}
 
+	t.pktChannel <- packet
+
 	return nil
 }
 
-// TODO: The channel part of this is not nice. Would be much better to use a shared channel but
-//       will need to implement a map like the Router has already.
 func (t *WinPVTransport) Receive() (*Packet, error) {
-	c2 := make(chan string, 1)
-	go func() {
-		for t.packet == nil {
-			time.Sleep(500 * time.Millisecond)
-		}
-		c2 <- "result 2"
-	}()
-	select {
-	case res := <-c2:
-		fmt.Println(res)
-	}
-	return t.packet, nil
+	rsp := <-t.pktChannel
+	return rsp, nil
 }
 
 func (t *WinPVTransport) GetBase() (*XenProjectXenStoreBase, error) {
@@ -168,6 +154,9 @@ func NewWinPVTransport() (*WinPVTransport, error) {
 	}
 
 	transport := &WinPVTransport{}
+
+	c := make(chan *Packet)
+	transport.pktChannel = c
 
 	base, err := transport.GetBase()
 	if err != nil {
