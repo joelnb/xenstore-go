@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
 	xenstore "github.com/joelnb/xenstore-go"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -30,8 +30,23 @@ func main() {
 				Name:  "use-socket, s",
 				Usage: "Use the socket rather than the xenbus device",
 			},
+			&cli.BoolFlag{
+				Name:  "verbose, V",
+				Usage: "More verbose output",
+			},
 		},
 		Before: func(ctx *cli.Context) error {
+			// Output to stderr instead of stdout, could also be a file.
+			log.SetOutput(os.Stderr)
+
+			// Only log the info severity or above.
+			log.SetLevel(log.InfoLevel)
+
+			// Higher level if running in verbose mode.
+			if ctx.Bool("verbose") {
+				log.SetLevel(log.DebugLevel)
+			}
+
 			t, err := getTransport(ctx)
 			if err != nil {
 				// Returning an error here causes usage text to be printed so just exit instead
