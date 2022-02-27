@@ -4,13 +4,11 @@
 package xenstore
 
 import (
-	"errors"
 	"fmt"
-	"runtime"
 	"sync"
 	// "time"
 
-	"github.com/go-ole/go-ole"
+	// "github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
 	"github.com/yusufpapurcu/wmi"
 )
@@ -20,8 +18,8 @@ var lock sync.Mutex
 type XenProjectXenStoreBase struct {
 	Active       bool
 	InstanceName string
+	XenTime      uint64
 	// XenTime      time.Time
-	XenTime uint64
 }
 
 type XenProjectXenStoreSession struct {
@@ -40,159 +38,41 @@ type XenProjectXenStoreUnsuspendedEvent struct {
 	SessionID uint32
 }
 
-func oleInt64(item *ole.IDispatch, prop string) (int64, error) {
-	v, err := oleutil.GetProperty(item, prop)
-	if err != nil {
-		return 0, err
-	}
-	defer v.Clear()
-
-	i := int64(v.Val)
-	return i, nil
-}
-
-func initialiseWmi() (bool, error) {
-	lock.Lock()
-	runtime.LockOSThread()
-
-	if err := ole.CoInitializeEx(0, ole.COINIT_MULTITHREADED); err != nil {
-		oleerr := err.(*ole.OleError)
-
-		if oleerr.Code() != ole.S_OK && oleerr.Code() != 0x00000001 {
-			return false, err
-		}
-
-		return false, nil
-	}
-	return true, nil
-}
-
-func uninitialiseWmi(was bool) {
-	if was {
-		ole.CoUninitialize()
-	}
-
-	lock.Unlock()
-	runtime.UnlockOSThread()
-}
-
-func internalOleWmiQuery(query string, connectServerArgs ...interface{}) (*ole.IDispatch, error) {
-	unknown, err := oleutil.CreateObject("WbemScripting.SWbemLocator")
-	if err != nil {
-		return nil, err
-	}
-	defer unknown.Release()
-
-	wmi, err := unknown.QueryInterface(ole.IID_IDispatch)
-	if err != nil {
-		return nil, err
-	}
-	defer wmi.Release()
-
-	// service is a SWbemServices
-	serviceRaw, err := oleutil.CallMethod(wmi, "ConnectServer", connectServerArgs...)
-	if err != nil {
-		return nil, err
-	}
-	service := serviceRaw.ToIDispatch()
-	defer serviceRaw.Clear()
-
-	// result is a SWBemObjectSet
-	resultRaw, err := oleutil.CallMethod(service, "ExecQuery", query)
-	if err != nil {
-		return nil, err
-	}
-	result := resultRaw.ToIDispatch()
-	defer resultRaw.Clear()
-
-	return result, nil
-}
-
-func internalOleWmiQuerySingle(query string, connectServerArgs ...interface{}) (*ole.IDispatch, error) {
-	result, err := internalOleWmiQuery(query, connectServerArgs...)
-	if err != nil {
-		fmt.Println("Returning error1")
-		return nil, err
-	}
-
-	count, err := oleInt64(result, "Count")
-	if err != nil {
-		fmt.Println("Returning error2")
-		return nil, err
-	}
-	if count != 1 {
-		return nil, errors.New("expected a single valued WMI result")
-	}
-
-	itemRaw, err := oleutil.CallMethod(result, "ItemIndex", 0)
-	if err != nil {
-		fmt.Println("Returning error3")
-		return nil, err
-	}
-	item := itemRaw.ToIDispatch()
-	defer itemRaw.Clear()
-
-	return item, nil
-}
-
 func NewWinPVTransport() error {
-	var base []XenProjectXenStoreBase
-	query := wmi.CreateQuery(&base, "")
+	swb, err := wmi.InitializeSWbemServices(wmi.DefaultClient)
+	if err != nil {
+		return err
+	}
+	wmi.DefaultClient.SWbemServicesClient = swb
+	defer wmi.DefaultClient.SWbemServicesClient.Close()
+
+	var baseList []XenProjectXenStoreBase
+	query := wmi.CreateQuery(&baseList, "")
 	fmt.Println(query)
 
-	// result, err := OleWMIQuerySingle(query, nil, "root\\wmi")
-	err := wmi.QueryNamespace(query, &base, "root\\wmi")
+	baseDispatchList, err := wmi.QueryNamespaceRaw(query, &baseList, "root\\wmi")
 	if err != nil {
-		fmt.Printf("ERR %+v\n", base)
 		return err
 	}
-	fmt.Printf("%+v\n", base)
+	defer func() {
+		for _, item := range baseDispatchList {
+			item.Release()
+		}
+	}()
 
-	result, err := wmi.CallMethod([]interface{}{}, fmt.Sprintf("\\\\DESKTOP-1H575TI\\root\\wmi:XenProjectXenStoreBase.InstanceName=\"%s\"", base[0].InstanceName), "AddSession", []interface{}{})
-	if err != nil {
-		fmt.Printf("ERR %+v\n", result)
-		return err
+	for i := range baseDispatchList {
+		item := baseDispatchList[i]
+		fmt.Printf("%+v\n", item)
+		base := baseList[i]
+		fmt.Printf("%+v\n", base)
+
+		methodName := "AddSession"
+		resultRaw, err := oleutil.CallMethod(item, methodName, "JoelSession")
+		if err != nil {
+			return fmt.Errorf("CallMethod XenProjectXenStoreBase.%s: %v", methodName, err)
+		}
+		fmt.Printf("%+v\n", resultRaw)
 	}
-	fmt.Printf("%+v\n", result)
-
-	// count, err := oleInt64(result, "Count")
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println(count)
-
-	// // Initialize a slice with Count capacity
-	// // dv.Set(reflect.MakeSlice(dv.Type(), 0, int(count)))
-
-	// // Call AddSession method on the XenProjectXenStoreBase WMI object
-	// mresRaw, err := oleutil.CallMethod(result, "AddSession")
-	// if err != nil {
-	// 	return err
-	// }
-	// mres := mresRaw.ToIDispatch()
-	// defer mresRaw.Clear()
-
-	// fmt.Printf("%+v\n", mres)
 
 	return nil
-}
-
-func OleWMIQuery(query string, connectServerArgs ...interface{}) (*ole.IDispatch, error) {
-	was, err := initialiseWmi()
-	if err != nil {
-		return nil, err
-	}
-	defer uninitialiseWmi(was)
-
-	return internalOleWmiQuery(query, connectServerArgs...)
-}
-
-func OleWMIQuerySingle(query string, connectServerArgs ...interface{}) (*ole.IDispatch, error) {
-	was, err := initialiseWmi()
-	if err != nil {
-		return nil, err
-	}
-	defer uninitialiseWmi(was)
-
-	return internalOleWmiQuerySingle(query, connectServerArgs...)
 }

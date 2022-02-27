@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 /*
@@ -59,6 +60,11 @@ func QueryNamespace(query string, dst interface{}, namespace string) error {
 	return Query(query, dst, nil, namespace)
 }
 
+// QueryNamespace invokes Query with the given namespace on the local machine.
+func QueryNamespaceRaw(query string, dst interface{}, namespace string) ([]*ole.IDispatch, error) {
+	return QueryRaw(query, dst, nil, namespace)
+}
+
 // Query runs the WQL query and appends the values to dst.
 //
 // dst must have type *[]S or *[]*S, for some struct type S. Fields selected in
@@ -77,6 +83,10 @@ func Query(query string, dst interface{}, connectServerArgs ...interface{}) erro
 		return DefaultClient.Query(query, dst, connectServerArgs...)
 	}
 	return DefaultClient.SWbemServicesClient.Query(query, dst, connectServerArgs...)
+}
+
+func QueryRaw(query string, dst interface{}, connectServerArgs ...interface{}) ([]*ole.IDispatch, error) {
+	return DefaultClient.QueryRaw(query, dst, connectServerArgs...)
 }
 
 // CallMethod calls a method named methodName on an instance of the class named
@@ -226,15 +236,17 @@ func (c *Client) CallMethod(connectServerArgs []interface{}, className, methodNa
 // changed using connectServerArgs. See
 // https://docs.microsoft.com/en-us/windows/desktop/WmiSdk/swbemlocator-connectserver
 // for details.
-func (c *Client) Query(query string, dst interface{}, connectServerArgs ...interface{}) error {
+func (c *Client) QueryRaw(query string, dst interface{}, connectServerArgs ...interface{}) ([]*ole.IDispatch, error) {
+	var dstRaw []*ole.IDispatch
+
 	dv := reflect.ValueOf(dst)
 	if dv.Kind() != reflect.Ptr || dv.IsNil() {
-		return ErrInvalidEntityType
+		return []*ole.IDispatch{}, ErrInvalidEntityType
 	}
 	dv = dv.Elem()
 	mat, elemType := checkMultiArg(dv)
 	if mat == multiArgTypeInvalid {
-		return ErrInvalidEntityType
+		return []*ole.IDispatch{}, ErrInvalidEntityType
 	}
 
 	lock.Lock()
@@ -244,35 +256,35 @@ func (c *Client) Query(query string, dst interface{}, connectServerArgs ...inter
 
 	service, cleanup, err := c.coinitService(connectServerArgs...)
 	if err != nil {
-		return err
+		return []*ole.IDispatch{}, err
 	}
 	defer cleanup()
 
 	// result is a SWBemObjectSet
 	resultRaw, err := oleutil.CallMethod(service, "ExecQuery", query)
 	if err != nil {
-		return err
+		return []*ole.IDispatch{}, err
 	}
 	result := resultRaw.ToIDispatch()
 	defer resultRaw.Clear()
 
 	count, err := oleInt64(result, "Count")
 	if err != nil {
-		return err
+		return []*ole.IDispatch{}, err
 	}
 
 	enumProperty, err := result.GetProperty("_NewEnum")
 	if err != nil {
-		return err
+		return []*ole.IDispatch{}, err
 	}
 	defer enumProperty.Clear()
 
 	enum, err := enumProperty.ToIUnknown().IEnumVARIANT(ole.IID_IEnumVariant)
 	if err != nil {
-		return err
+		return []*ole.IDispatch{}, err
 	}
 	if enum == nil {
-		return fmt.Errorf("can't get IEnumVARIANT, enum is nil")
+		return []*ole.IDispatch{}, fmt.Errorf("can't get IEnumVARIANT, enum is nil")
 	}
 	defer enum.Release()
 
@@ -282,13 +294,13 @@ func (c *Client) Query(query string, dst interface{}, connectServerArgs ...inter
 	var errFieldMismatch error
 	for itemRaw, length, err := enum.Next(1); length > 0; itemRaw, length, err = enum.Next(1) {
 		if err != nil {
-			return err
+			return []*ole.IDispatch{}, err
 		}
 
 		err := func() error {
 			// item is a SWbemObject, but really a Win32_Process
 			item := itemRaw.ToIDispatch()
-			defer item.Release()
+			dstRaw = append(dstRaw, item)
 
 			ev := reflect.New(elemType)
 			if err = c.loadEntity(ev.Interface(), item); err != nil {
@@ -308,10 +320,19 @@ func (c *Client) Query(query string, dst interface{}, connectServerArgs ...inter
 			return nil
 		}()
 		if err != nil {
-			return err
+			return []*ole.IDispatch{}, err
 		}
 	}
-	return errFieldMismatch
+
+	return dstRaw, errFieldMismatch
+}
+
+func (c *Client) Query(query string, dst interface{}, connectServerArgs ...interface{}) error {
+	dstRaw, err := c.QueryRaw(query, dst, connectServerArgs...)
+	for _, result := range dstRaw {
+		result.Release()
+	}
+	return err
 }
 
 // ErrFieldMismatch is returned when a field is to be loaded into a different
