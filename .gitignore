@@ -1,7 +1,5 @@
 .vagrant/
 
 # Built files
-xenstore
-xenstore-*
-xenstore_*
+/xenstore
 *.exe
