@@ -6,10 +6,7 @@ package xenstore
 import (
 	"fmt"
 	"sync"
-	// "time"
 
-	"github.com/go-ole/go-ole"
-	"github.com/go-ole/go-ole/oleutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/yusufpapurcu/wmi"
 )
@@ -54,6 +51,7 @@ func (t *WinPVTransport) GetBase() (*XenProjectXenStoreBase, error) {
 	}
 
 	return &XenProjectXenStoreBase{
+		transport:  t,
 		disp:       baseDispatchList[0],
 		Properties: baseList[0],
 	}, nil
@@ -75,7 +73,7 @@ func (t *WinPVTransport) GetSession(sessionId int32) (*XenProjectXenStoreSession
 		}
 	}
 
-	log.Debug("GetSession: Got session list: %+v", sessionList)
+	log.Debugf("GetSession: Got session list: %+v", sessionList)
 
 	if len(sessionList) != len(sessionDispatchList) {
 		cleanup()
@@ -91,90 +89,10 @@ func (t *WinPVTransport) GetSession(sessionId int32) (*XenProjectXenStoreSession
 	}
 
 	return &XenProjectXenStoreSession{
+		transport:  t,
 		disp:       sessionDispatchList[0],
 		Properties: sessionList[0],
 	}, nil
-}
-
-func (b *XenProjectXenStoreBase) AddSession(name string) (int32, error) {
-	log.Debug("AddSession: Adding session")
-
-	sessionResultRaw := new(ole.VARIANT)
-	ole.VariantInit(sessionResultRaw)
-	defer sessionResultRaw.Clear()
-
-	methodName := "AddSession"
-	resultRaw, err := oleutil.CallMethod(b.disp, methodName, name, sessionResultRaw)
-	if err != nil {
-		return 0, fmt.Errorf("CallMethod XenProjectXenStoreBase.%s: %v", methodName, err)
-	}
-	defer resultRaw.Clear()
-
-	log.Debugf("AddSession: Added session: %+v", sessionResultRaw)
-
-	return sessionResultRaw.Value().(int32), nil
-}
-
-func (s *XenProjectXenStoreSession) GetValue(path string) (string, error) {
-	log.Debugf("GetValue: Getting value for path: %s", path)
-
-	valueResultRaw := new(ole.VARIANT)
-	ole.VariantInit(valueResultRaw)
-	defer valueResultRaw.Clear()
-
-	methodName := "GetValue"
-	resultRaw, err := oleutil.CallMethod(s.disp, methodName, path, valueResultRaw)
-	if err != nil {
-		return "", fmt.Errorf("CallMethod XenProjectXenStoreBase.%s: %v", methodName, err)
-	}
-	defer resultRaw.Clear()
-
-	return valueResultRaw.ToString(), nil
-}
-
-type XenProjectXenStoreBase struct {
-	disp       *ole.IDispatch
-	Properties XenProjectXenStoreBaseProps
-}
-
-type XenProjectXenStoreBaseProps struct {
-	Active       bool
-	InstanceName string
-	XenTime      uint64
-}
-
-type XenProjectXenStoreSession struct {
-	disp       *ole.IDispatch
-	Properties XenProjectXenStoreSessionProps
-}
-
-type XenProjectXenStoreSessionProps struct {
-	Active       bool
-	ID           string
-	InstanceName string
-	SessionID    uint32
-}
-
-type XenProjectXenStoreWatchEvent struct {
-	EventID string
-}
-
-type XenProjectXenStoreUnsuspendedEvent struct {
-	ID        string
-	SessionID uint32
-}
-
-func getBase() (*XenProjectXenStoreBase, error) {
-	return nil, nil
-}
-
-func initWmi() error {
-	swb, err := wmi.InitializeSWbemServices(wmi.DefaultClient)
-	if err != nil {
-		return err
-	}
-	wmi.DefaultClient.SWbemServicesClient = swb
-	return nil
 }
 
 func NewWinPVTransport() error {
@@ -190,12 +108,7 @@ func NewWinPVTransport() error {
 		return err
 	}
 
-	sessionId, err := base.AddSession("JoelSession")
-	if err != nil {
-		return err
-	}
-
-	session, err := transport.GetSession(sessionId)
+	session, err := base.AddSession("JoelSession")
 	if err != nil {
 		return err
 	}
@@ -206,6 +119,17 @@ func NewWinPVTransport() error {
 	}
 
 	fmt.Println(value)
+
+	children, err := session.GetChildren(value)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%+v\n", children)
+
+	if err := session.EndSession(); err != nil {
+		return err
+	}
 
 	return nil
 }
