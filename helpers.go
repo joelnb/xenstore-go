@@ -11,9 +11,9 @@ import (
 
 var (
 	// TODO: Match start/end of text not line
-	pathRegex        = regexp.MustCompile("^[a-zA-Z0-9-/_@]+\x00?$")
-	watchPathRegex   = regexp.MustCompile("^@(?:introduceDomain|releaseDomain)\x00?$")
-	permissionsRegex = regexp.MustCompile("^[wrbn]\\d+$")
+	pathRegex        = regexp.MustCompile(`^[a-zA-Z0-9-/_@]+\x00?$`)
+	watchPathRegex   = regexp.MustCompile(`^@(?:introduceDomain|releaseDomain)\x00?$`)
+	permissionsRegex = regexp.MustCompile(`^[wrbn]\d+$`)
 )
 
 // JoinXenStorePath concatenates parts of a path together with the XenStorePathSeparator,

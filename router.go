@@ -124,5 +124,7 @@ func (r *Router) sendToChannel(pkt *Packet) {
 		} else {
 			panic(fmt.Sprintf("no channel to send packet for %d to!", pkt.Header.RqId))
 		}
+
+		r.removeChannel(pkt.Header.RqId)
 	}
 }
