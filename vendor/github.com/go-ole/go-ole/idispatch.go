@@ -1,9 +1,6 @@
 package ole
 
-import (
-	"fmt"
-	"unsafe"
-)
+import "unsafe"
 
 type IDispatch struct {
 	IUnknown
@@ -68,16 +65,11 @@ func (v *IDispatch) InvokeWithOptionalArgs(name string, dispatch int16, params [
 		return
 	}
 
-	fmt.Printf("DISPLAYID: %+v\n", displayID)
-
 	if len(params) < 1 {
 		result, err = v.Invoke(displayID, dispatch)
 	} else {
 		result, err = v.Invoke(displayID, dispatch, params...)
 	}
-
-	fmt.Printf("RESULT: %+v\n", result)
-	fmt.Printf("RESULT VALUE: %+v\n", result.Value())
 
 	return
 }
