@@ -7,7 +7,7 @@ import (
 
 	xenstore "github.com/joelnb/xenstore-go"
 	log "github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var client *xenstore.Client
@@ -65,26 +65,26 @@ func main() {
 
 			return client.Error()
 		},
-		Commands: []cli.Command{
-			cli.Command{
+		Commands: []*cli.Command{
+			&cli.Command{
 				Name:   "read",
 				Flags:  []cli.Flag{},
 				Usage:  "Read values from xenstore by path",
 				Action: ReadCommand,
 			},
-			cli.Command{
+			&cli.Command{
 				Name:   "write",
 				Flags:  []cli.Flag{},
 				Usage:  "Write values to xenstore by path",
 				Action: WriteCommand,
 			},
-			cli.Command{
+			&cli.Command{
 				Name:   "rm",
 				Flags:  []cli.Flag{},
 				Usage:  "Remove a value from xenstore by path",
 				Action: RmCommand,
 			},
-			cli.Command{
+			&cli.Command{
 				Name:    "list",
 				Aliases: []string{"ls"},
 				Flags: []cli.Flag{
@@ -95,19 +95,19 @@ func main() {
 				Usage:  "List values from xenstore by path",
 				Action: ListCommand,
 			},
-			cli.Command{
+			&cli.Command{
 				Name:   "vm-path",
 				Flags:  []cli.Flag{},
 				Usage:  "Get the path for a VM",
 				Action: VMPathCommand,
 			},
-			cli.Command{
+			&cli.Command{
 				Name:   "watch",
 				Flags:  []cli.Flag{},
 				Usage:  "Watch a XenStore path for changes",
 				Action: WatchCommand,
 			},
-			cli.Command{
+			&cli.Command{
 				Name:   "info",
 				Flags:  []cli.Flag{},
 				Usage:  "Display system information",
