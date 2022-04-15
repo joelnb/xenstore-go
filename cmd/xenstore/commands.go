@@ -9,18 +9,18 @@ import (
 	"syscall"
 
 	xenstore "github.com/joelnb/xenstore-go"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 func ReadCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.NewExitError("Please specify the XenStore path to read", 3)
+		return cli.Exit("Please specify the XenStore path to read", 3)
 	}
 
 	val, err := client.Read(path)
 	if err != nil {
-		return cli.NewExitError(err.Error(), 2)
+		return cli.Exit(err.Error(), 2)
 	}
 
 	fmt.Println(val)
@@ -30,12 +30,12 @@ func ReadCommand(ctx *cli.Context) error {
 func RmCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.NewExitError("Please specify the XenStore path to remove", 3)
+		return cli.Exit("Please specify the XenStore path to remove", 3)
 	}
 
 	val, err := client.Remove(path)
 	if err != nil {
-		return cli.NewExitError(err.Error(), 2)
+		return cli.Exit(err.Error(), 2)
 	}
 
 	fmt.Println(val)
@@ -45,17 +45,17 @@ func RmCommand(ctx *cli.Context) error {
 func WriteCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.NewExitError("Please specify the XenStore path to write", 3)
+		return cli.Exit("Please specify the XenStore path to write", 3)
 	}
 
 	val := ctx.Args().Get(1)
 	if path == "" {
-		return cli.NewExitError("Please specify the value to write", 3)
+		return cli.Exit("Please specify the value to write", 3)
 	}
 
 	val, err := client.Write(path, val)
 	if err != nil {
-		return cli.NewExitError(err.Error(), 2)
+		return cli.Exit(err.Error(), 2)
 	}
 
 	fmt.Println(val)
@@ -65,17 +65,17 @@ func WriteCommand(ctx *cli.Context) error {
 func VMPathCommand(ctx *cli.Context) error {
 	domid := ctx.Args().First()
 	if domid == "" {
-		return cli.NewExitError("Please specify the domid of the VM", 3)
+		return cli.Exit("Please specify the domid of the VM", 3)
 	}
 
 	domidInt, err := strconv.Atoi(domid)
 	if err != nil {
-		return cli.NewExitError(err.Error(), 2)
+		return cli.Exit(err.Error(), 2)
 	}
 
 	path, err := client.GetDomainPath(domidInt)
 	if err != nil {
-		return cli.NewExitError(err.Error(), 2)
+		return cli.Exit(err.Error(), 2)
 	}
 
 	fmt.Println(path)
@@ -85,12 +85,12 @@ func VMPathCommand(ctx *cli.Context) error {
 func ListCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.NewExitError("Please specify the XenStore path to list", 3)
+		return cli.Exit("Please specify the XenStore path to list", 3)
 	}
 
 	subpaths, err := client.List(path)
 	if err != nil {
-		return cli.NewExitError(err.Error(), 2)
+		return cli.Exit(err.Error(), 2)
 	}
 
 	if ctx.Bool("long") {
@@ -99,7 +99,7 @@ func ListCommand(ctx *cli.Context) error {
 
 			perms, err := client.GetPermissions(fullpath)
 			if err != nil {
-				return cli.NewExitError(err.Error(), 2)
+				return cli.Exit(err.Error(), 2)
 			}
 
 			fmt.Println(fullpath, perms)
@@ -114,17 +114,17 @@ func ListCommand(ctx *cli.Context) error {
 func WatchCommand(ctx *cli.Context) error {
 	path := ctx.Args().First()
 	if path == "" {
-		return cli.NewExitError("Please specify the XenStore path to watch", 3)
+		return cli.Exit("Please specify the XenStore path to watch", 3)
 	}
 
 	token := ctx.Args().Get(1)
 	if token == "" {
-		return cli.NewExitError("Please specify the token to create the watch with", 3)
+		return cli.Exit("Please specify the token to create the watch with", 3)
 	}
 
 	ch, err := client.Watch(path, token)
 	if err != nil {
-		return cli.NewExitError(err.Error(), 2)
+		return cli.Exit(err.Error(), 2)
 	}
 
 	sigs := make(chan os.Signal, 1)
@@ -135,7 +135,7 @@ OUTER:
 		select {
 		case rsp := <-ch:
 			if err := rsp.Check(); err != nil {
-				return cli.NewExitError(err.Error(), 2)
+				return cli.Exit(err.Error(), 2)
 			} else {
 				fmt.Println(rsp)
 			}
@@ -144,7 +144,7 @@ OUTER:
 			fmt.Printf("Got signal %s, removing watch and exiting!", sig)
 
 			if err := client.UnWatch(path, token); err != nil {
-				return cli.NewExitError(err.Error(), 2)
+				return cli.Exit(err.Error(), 2)
 			}
 
 			break OUTER
