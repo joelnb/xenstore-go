@@ -1,6 +1,6 @@
 module github.com/joelnb/xenstore-go
 
-go 1.17
+go 1.19
 
 require (
 	github.com/go-ole/go-ole v1.2.6
