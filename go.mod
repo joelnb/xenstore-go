@@ -9,7 +9,7 @@ require (
 	github.com/onrik/logrus v0.10.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.2
-	github.com/urfave/cli/v2 v2.25.2
+	github.com/urfave/cli/v2 v2.25.3
 )
 
 require (
