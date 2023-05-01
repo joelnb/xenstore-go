@@ -1,7 +1,7 @@
 package xenstore
 
 import (
-	"io/ioutil"
+	"os"
 	"sync"
 )
 
@@ -73,7 +73,7 @@ func RequestID() uint32 {
 // ControlDomain checks whether the current Xen domain has the 'control_d' capability (will be true
 // on Domain-0).
 func ControlDomain() bool {
-	r, err := ioutil.ReadFile("/proc/xen/capabilities")
+	r, err := os.ReadFile("/proc/xen/capabilities")
 	if err != nil {
 		return false
 	}
