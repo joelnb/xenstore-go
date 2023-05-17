@@ -7,7 +7,7 @@ require (
 	github.com/joelnb/wmi v0.0.0-20220227211458-fee931480b9c
 	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
 	github.com/onrik/logrus v0.10.0
-	github.com/sirupsen/logrus v1.9.1
+	github.com/sirupsen/logrus v1.9.2
 	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli/v2 v2.25.3
 )
