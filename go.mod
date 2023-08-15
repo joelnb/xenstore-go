@@ -3,7 +3,7 @@ module github.com/joelnb/xenstore-go
 go 1.19
 
 require (
-	github.com/go-ole/go-ole v1.2.6
+	github.com/go-ole/go-ole v1.3.0
 	github.com/joelnb/wmi v0.0.0-20220227211458-fee931480b9c
 	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
 	github.com/onrik/logrus v0.11.0
