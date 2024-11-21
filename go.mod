@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/go-ole/go-ole v1.3.0
 	github.com/joelnb/wmi v0.0.0-20220227211458-fee931480b9c
-	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
+	github.com/lunixbochs/struc v0.0.0-20241101090106-8d528fa2c543
 	github.com/onrik/logrus v0.11.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0
