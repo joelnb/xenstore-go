@@ -1,6 +1,8 @@
 module github.com/joelnb/xenstore-go
 
-go 1.19
+go 1.22
+
+toolchain go1.24.2
 
 require (
 	github.com/go-ole/go-ole v1.3.0
@@ -10,6 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.6
+	github.com/urfave/cli/v3 v3.1.1
 )
 
 require (
