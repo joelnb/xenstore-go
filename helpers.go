@@ -58,18 +58,17 @@ func UnixSocketPath() string {
 
 // XenBusPath returns the path to the XenBus device on this system
 func XenBusPath() string {
-	f, err := os.Open("/dev/xen/xenbus")
-	if err != nil && runtime.GOOS == "linux" {
-		return "/proc/xen/xenbus"
-	}
-	f.Close()
-
 	switch runtime.GOOS {
+	case "linux":
+		var procPath = "/proc/xen/xenbus"
+		if _, err := os.Stat(procPath); err == nil {
+			return procPath
+		}
 	case "netbsd":
 		return "/kern/xen/xenbus"
-	default:
-		return "/dev/xen/xenbus"
 	}
+
+	return "/dev/xen/xenbus"
 }
 
 // ValidPath returns a bool representing whether the provided string is a valid

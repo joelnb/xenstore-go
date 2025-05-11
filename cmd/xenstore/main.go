@@ -62,11 +62,17 @@ func main() {
 			return ctx, nil
 		},
 		After: func(ctx context.Context, cmd *cli.Command) error {
-			if client != nil {
-				client.Close()
+			if client == nil {
+				return nil
 			}
 
-			return client.Error()
+			closeErr := client.Close()
+
+			if storedErr := client.Error(); storedErr != nil {
+				return storedErr
+			}
+
+			return closeErr
 		},
 		Commands: []*cli.Command{
 			&cli.Command{

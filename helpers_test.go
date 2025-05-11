@@ -49,19 +49,25 @@ func TestValidPermissions(t *testing.T) {
 	}
 }
 
+func setEnvOrPanic(env, value string) {
+	if err := os.Setenv(env, value); err != nil {
+		panic(err)
+	}
+}
+
 func TestUnixSocketPath(t *testing.T) {
-	os.Setenv("XENSTORED_PATH", "/example/xensocket")
-	os.Setenv("XENSTORED_RUNDIR", "")
+	setEnvOrPanic("XENSTORED_PATH", "/example/xensocket")
+	setEnvOrPanic("XENSTORED_RUNDIR", "")
 	assert.Equal(t, "/example/xensocket", UnixSocketPath(),
 		"Should be equal to XENSTORED_PATH if XENSTORED_PATH is set")
 
-	os.Setenv("XENSTORED_PATH", "")
-	os.Setenv("XENSTORED_RUNDIR", "/tmp/xenstored/")
+	setEnvOrPanic("XENSTORED_PATH", "")
+	setEnvOrPanic("XENSTORED_RUNDIR", "/tmp/xenstored/")
 	assert.Equal(t, "/tmp/xenstored/socket", UnixSocketPath(),
 		"Should be equal to XENSTORED_RUNDIR + 'socket' if XENSTORED_RUNDIR is set")
 
-	os.Setenv("XENSTORED_PATH", "")
-	os.Setenv("XENSTORED_RUNDIR", "")
+	setEnvOrPanic("XENSTORED_PATH", "")
+	setEnvOrPanic("XENSTORED_RUNDIR", "")
 	assert.Equal(t, "/var/run/xenstored/socket", UnixSocketPath(),
 		"Should have a default if neither env variable is set")
 }
