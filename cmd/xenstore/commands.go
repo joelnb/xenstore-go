@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -9,11 +10,11 @@ import (
 	"syscall"
 
 	xenstore "github.com/joelnb/xenstore-go"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func ReadCommand(ctx *cli.Context) error {
-	path := ctx.Args().First()
+func ReadCommand(ctx context.Context, cmd *cli.Command) error {
+	path := cmd.Args().First()
 	if path == "" {
 		return cli.Exit("Please specify the XenStore path to read", 3)
 	}
@@ -27,8 +28,8 @@ func ReadCommand(ctx *cli.Context) error {
 	return nil
 }
 
-func RmCommand(ctx *cli.Context) error {
-	path := ctx.Args().First()
+func RmCommand(ctx context.Context, cmd *cli.Command) error {
+	path := cmd.Args().First()
 	if path == "" {
 		return cli.Exit("Please specify the XenStore path to remove", 3)
 	}
@@ -42,13 +43,13 @@ func RmCommand(ctx *cli.Context) error {
 	return nil
 }
 
-func WriteCommand(ctx *cli.Context) error {
-	path := ctx.Args().First()
+func WriteCommand(ctx context.Context, cmd *cli.Command) error {
+	path := cmd.Args().First()
 	if path == "" {
 		return cli.Exit("Please specify the XenStore path to write", 3)
 	}
 
-	val := ctx.Args().Get(1)
+	val := cmd.Args().Get(1)
 	if path == "" {
 		return cli.Exit("Please specify the value to write", 3)
 	}
@@ -62,8 +63,8 @@ func WriteCommand(ctx *cli.Context) error {
 	return nil
 }
 
-func VMPathCommand(ctx *cli.Context) error {
-	domid := ctx.Args().First()
+func VMPathCommand(ctx context.Context, cmd *cli.Command) error {
+	domid := cmd.Args().First()
 	if domid == "" {
 		return cli.Exit("Please specify the domid of the VM", 3)
 	}
@@ -82,8 +83,8 @@ func VMPathCommand(ctx *cli.Context) error {
 	return nil
 }
 
-func ListCommand(ctx *cli.Context) error {
-	path := ctx.Args().First()
+func ListCommand(ctx context.Context, cmd *cli.Command) error {
+	path := cmd.Args().First()
 	if path == "" {
 		return cli.Exit("Please specify the XenStore path to list", 3)
 	}
@@ -93,7 +94,7 @@ func ListCommand(ctx *cli.Context) error {
 		return cli.Exit(err.Error(), 2)
 	}
 
-	if ctx.Bool("long") {
+	if cmd.Bool("long") {
 		for _, subpath := range subpaths {
 			fullpath := xenstore.JoinXenStorePath(path, subpath)
 
@@ -111,13 +112,13 @@ func ListCommand(ctx *cli.Context) error {
 	return nil
 }
 
-func WatchCommand(ctx *cli.Context) error {
-	path := ctx.Args().First()
+func WatchCommand(ctx context.Context, cmd *cli.Command) error {
+	path := cmd.Args().First()
 	if path == "" {
 		return cli.Exit("Please specify the XenStore path to watch", 3)
 	}
 
-	token := ctx.Args().Get(1)
+	token := cmd.Args().Get(1)
 	if token == "" {
 		return cli.Exit("Please specify the token to create the watch with", 3)
 	}
@@ -154,7 +155,7 @@ OUTER:
 	return nil
 }
 
-func InfoCommand(ctx *cli.Context) error {
+func InfoCommand(ctx context.Context, cmd *cli.Command) error {
 	fmt.Println("Socket Path:", xenstore.UnixSocketPath())
 	fmt.Println("XenBus Path:", xenstore.XenBusPath())
 	fmt.Println("ControlDomain:", xenstore.ControlDomain())

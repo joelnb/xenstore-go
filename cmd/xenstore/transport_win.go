@@ -5,9 +5,9 @@ package main
 
 import (
 	"github.com/joelnb/xenstore-go"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func getTransport(ctx *cli.Context) (xenstore.Transport, error) {
+func getTransport(cmd *cli.Command) (xenstore.Transport, error) {
 	return xenstore.NewWinPVTransport()
 }

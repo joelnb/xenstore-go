@@ -1,22 +1,25 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
 
 	xenstore "github.com/joelnb/xenstore-go"
 	log "github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var client *xenstore.Client
 
 func main() {
-	app := &cli.App{
+	app := &cli.Command{
 		Usage:    "XenStore tools in Go",
 		Version:  Version,
-		Compiled: time.Now(),
+		Metadata: map[string]interface{}{
+            "compiled": time.Now(),
+        },
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "socket-path",
@@ -35,7 +38,7 @@ func main() {
 				Usage: "More verbose output",
 			},
 		},
-		Before: func(ctx *cli.Context) error {
+		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 			// Output to stderr instead of stdout, could also be a file.
 			log.SetOutput(os.Stderr)
 
@@ -43,11 +46,11 @@ func main() {
 			log.SetLevel(log.InfoLevel)
 
 			// Higher level if running in verbose mode.
-			if ctx.Bool("verbose") {
+			if cmd.Bool("verbose") {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			t, err := getTransport(ctx)
+			t, err := getTransport(cmd)
 			if err != nil {
 				// Returning an error here causes usage text to be printed so just exit instead
 				fmt.Println(err)
@@ -56,9 +59,9 @@ func main() {
 
 			client = xenstore.NewClient(t)
 
-			return nil
+			return ctx, nil
 		},
-		After: func(ctx *cli.Context) error {
+		After: func(ctx context.Context, cmd *cli.Command) error {
 			if client != nil {
 				client.Close()
 			}
@@ -116,7 +119,7 @@ func main() {
 		},
 	}
 
-	err := app.Run(os.Args)
+	err := app.Run(context.Background(), os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}

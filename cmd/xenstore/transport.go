@@ -5,14 +5,14 @@ package main
 
 import (
 	"github.com/joelnb/xenstore-go"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func getTransport(ctx *cli.Context) (xenstore.Transport, error) {
-	if ctx.Bool("use-socket") {
+func getTransport(cmd *cli.Command) (xenstore.Transport, error) {
+	if cmd.Bool("use-socket") {
 		var sockPath string
-		if ctx.IsSet("socket-path") {
-			sockPath = ctx.String("socket-path")
+		if cmd.IsSet("socket-path") {
+			sockPath = cmd.String("socket-path")
 		} else {
 			sockPath = xenstore.UnixSocketPath()
 		}
@@ -20,8 +20,8 @@ func getTransport(ctx *cli.Context) (xenstore.Transport, error) {
 		return xenstore.NewUnixSocketTransport(sockPath)
 	} else {
 		var devPath string
-		if ctx.IsSet("xenbus-path") {
-			devPath = ctx.String("xenbus-path")
+		if cmd.IsSet("xenbus-path") {
+			devPath = cmd.String("xenbus-path")
 		} else {
 			devPath = xenstore.XenBusPath()
 		}
