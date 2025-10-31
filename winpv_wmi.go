@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 /*
 Some examples of how to use the PowerShell API
