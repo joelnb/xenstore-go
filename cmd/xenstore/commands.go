@@ -164,3 +164,18 @@ func InfoCommand(ctx context.Context, cmd *cli.Command) error {
 	fmt.Println("GitCommit:", GitCommit)
 	return nil
 }
+
+func MkdirCommand(ctx context.Context, cmd *cli.Command) error {
+	path := cmd.Args().First()
+	if path == "" {
+		return cli.Exit("Please specify the XenStore path to create", 3)
+	}
+
+	val, err := client.Mkdir(path)
+	if err != nil {
+		return cli.Exit(err.Error(), 2)
+	}
+
+	fmt.Println(val)
+	return nil
+}

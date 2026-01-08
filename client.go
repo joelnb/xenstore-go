@@ -204,3 +204,15 @@ func (c *Client) UnWatch(path, token string) error {
 
 	return nil
 }
+
+// Ensures that the <path> exists, by necessary by creating it and any missing parents with empty values.
+// If <path> or any parent already exists, its value is left unchanged.
+// Returns OK on success
+func (c *Client) Mkdir(path string) (string, error) {
+	p, err := c.submitBytes(XsMkdir, []byte(path), 0x0)
+	if err != nil {
+		return "", err
+	}
+
+	return p.payloadString(), nil
+}

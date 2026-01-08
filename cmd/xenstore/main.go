@@ -15,11 +15,11 @@ var client *xenstore.Client
 
 func main() {
 	app := &cli.Command{
-		Usage:    "XenStore tools in Go",
-		Version:  Version,
+		Usage:   "XenStore tools in Go",
+		Version: Version,
 		Metadata: map[string]interface{}{
-            "compiled": time.Now(),
-        },
+			"compiled": time.Now(),
+		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "socket-path",
@@ -115,6 +115,12 @@ func main() {
 				Flags:  []cli.Flag{},
 				Usage:  "Watch a XenStore path for changes",
 				Action: WatchCommand,
+			},
+			&cli.Command{
+				Name:   "mkdir",
+				Flags:  []cli.Flag{},
+				Usage:  "Create path in xenstore",
+				Action: MkdirCommand,
 			},
 			&cli.Command{
 				Name:   "info",
