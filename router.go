@@ -68,6 +68,7 @@ func (r *Router) Send(pkt *Packet) (chan *Packet, error) {
 	r.channelMap[pkt.Header.RqId] = c
 
 	if err := r.transport.Send(pkt); err != nil {
+		delete(r.channelMap, pkt.Header.RqId)
 		return nil, err
 	}
 
@@ -88,11 +89,9 @@ func (r *Router) Stop() {
 	r.loop = false
 }
 
-func (r *Router) removeChannel(id uint32) {
-	delete(r.channelMap, id)
-}
-
 func (r *Router) removeWatchChannel(token string) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	delete(r.watchMap, token)
 }
 
@@ -118,6 +117,6 @@ func (r *Router) sendToChannel(pkt *Packet) {
 			panic(fmt.Sprintf("no channel to send packet for %d to!", pkt.Header.RqId))
 		}
 
-		r.removeChannel(pkt.Header.RqId)
+		delete(r.channelMap, pkt.Header.RqId)
 	}
 }
