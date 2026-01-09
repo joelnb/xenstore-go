@@ -65,6 +65,8 @@ func (r *Router) Send(pkt *Packet) (chan *Packet, error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
+	r.channelMap[pkt.Header.RqId] = c
+
 	if err := r.transport.Send(pkt); err != nil {
 		return nil, err
 	}
@@ -78,9 +80,6 @@ func (r *Router) Send(pkt *Packet) (chan *Packet, error) {
 
 		r.watchMap[payloadParts[1]] = append(r.watchMap[payloadParts[1]], c)
 	}
-
-	r.channelMap[pkt.Header.RqId] = c
-
 	return c, nil
 }
 
@@ -90,16 +89,10 @@ func (r *Router) Stop() {
 }
 
 func (r *Router) removeChannel(id uint32) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-
 	delete(r.channelMap, id)
 }
 
 func (r *Router) removeWatchChannel(token string) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-
 	delete(r.watchMap, token)
 }
 
