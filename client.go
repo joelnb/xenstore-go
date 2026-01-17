@@ -89,7 +89,7 @@ func (c *Client) submitBytes(op xenStoreOperation, payload []byte, txid uint32) 
 
 // List lists the descendants of path.
 func (c *Client) List(path string) ([]string, error) {
-	p, err := c.submitBytes(XsDirectory, []byte(path), 0x0)
+	p, err := c.submitBytes(XsDirectory, append([]byte(path), NUL), 0x0)
 	if err != nil {
 		return []string{}, err
 	}
@@ -100,7 +100,7 @@ func (c *Client) List(path string) ([]string, error) {
 
 // Read reads the contents of path from XenStore.
 func (c *Client) Read(path string) (string, error) {
-	p, err := c.submitBytes(XsRead, []byte(path), 0x0)
+	p, err := c.submitBytes(XsRead, append([]byte(path), NUL), 0x0)
 	if err != nil {
 		return "", err
 	}
@@ -110,7 +110,7 @@ func (c *Client) Read(path string) (string, error) {
 
 // Remove removes a path from XenStore recursively
 func (c *Client) Remove(path string) (string, error) {
-	p, err := c.submitBytes(XsRm, []byte(path), 0x0)
+	p, err := c.submitBytes(XsRm, append([]byte(path), NUL), 0x0)
 	if err != nil {
 		return "", err
 	}
@@ -134,7 +134,7 @@ func (c *Client) Write(path, value string) (string, error) {
 
 // GetPermissions returns the currently stored permissions for a XenStore path.
 func (c *Client) GetPermissions(path string) (string, error) {
-	p, err := c.submitBytes(XsGetPermissions, []byte(path), 0x0)
+	p, err := c.submitBytes(XsGetPermissions, append([]byte(path), NUL), 0x0)
 	if err != nil {
 		return "", err
 	}
@@ -149,6 +149,7 @@ func (c *Client) SetPermissions(path string, perms []string) (string, error) {
 		buf.WriteByte(NUL)
 		buf.WriteString(perm)
 	}
+	buf.WriteByte(NUL)
 
 	p, err := c.submitBytes(XsSetPermissions, buf.Bytes(), 0x0)
 	if err != nil {
@@ -162,7 +163,7 @@ func (c *Client) SetPermissions(path string, perms []string) (string, error) {
 func (c *Client) GetDomainPath(domid int) (string, error) {
 	s := strconv.Itoa(domid)
 
-	p, err := c.submitBytes(XsGetDomainPath, []byte(s), 0x0)
+	p, err := c.submitBytes(XsGetDomainPath, append([]byte(s), NUL), 0x0)
 	if err != nil {
 		return "", err
 	}
@@ -175,6 +176,7 @@ func (c *Client) Watch(path, token string) (chan *Packet, error) {
 	buf := bytes.NewBufferString(path)
 	buf.WriteByte(NUL)
 	buf.WriteString(token)
+	buf.WriteByte(NUL)
 
 	p, err := NewPacket(XsWatch, buf.Bytes(), 0x0)
 	if err != nil {
@@ -189,6 +191,7 @@ func (c *Client) UnWatch(path, token string) error {
 	buf := bytes.NewBufferString(path)
 	buf.WriteByte(NUL)
 	buf.WriteString(token)
+	buf.WriteByte(NUL)
 
 	p, err := c.submitBytes(XsUnWatch, buf.Bytes(), 0x0)
 	if err != nil {
@@ -209,7 +212,7 @@ func (c *Client) UnWatch(path, token string) error {
 // If <path> or any parent already exists, its value is left unchanged.
 // Returns OK on success
 func (c *Client) Mkdir(path string) (string, error) {
-	p, err := c.submitBytes(XsMkdir, []byte(path), 0x0)
+	p, err := c.submitBytes(XsMkdir, append([]byte(path), NUL), 0x0)
 	if err != nil {
 		return "", err
 	}

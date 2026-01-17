@@ -39,8 +39,6 @@ func NewPacket(op xenStoreOperation, payload []byte, txid uint32) (*Packet, erro
 		return nil, fmt.Errorf("payload too long: %d", l)
 	}
 
-	payload = append(payload, NUL)
-
 	return &Packet{
 		Header: &PacketHeader{
 			Op:     op,
