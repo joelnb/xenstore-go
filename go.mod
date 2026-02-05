@@ -2,7 +2,7 @@ module github.com/joelnb/xenstore-go
 
 go 1.22
 
-toolchain go1.25.6
+toolchain go1.25.7
 
 require (
 	github.com/go-ole/go-ole v1.3.0
